@@ -906,7 +906,8 @@ $wpdb->update(
        
         <select id="language" name="language">
             <option value="tr" <?php if($user_options[0]['language']=='tr'){ ?> selected="selected" <?php } ?>>Türkçe</option>
-            <option value="en" <?php if($user_options[0]['language']=='en'){ ?> selected="selected" <?php } ?>>Engilsh</option>
+            <option value="en" <?php if($user_options[0]['language']=='en'){ ?> selected="selected" <?php } ?>>English</option>
+            <option value="de" <?php if($user_options[0]['language']=='de'){ ?> selected="selected" <?php } ?>>Deutsch</option>
             <option value="fr" <?php if($user_options[0]['language']=='fr'){ ?> selected="selected" <?php } ?>>Français</option>
             <option value="es" <?php if($user_options[0]['language']=='es'){ ?> selected="selected" <?php } ?>>Español</option>
         </select>
