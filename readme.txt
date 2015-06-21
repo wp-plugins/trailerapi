@@ -28,22 +28,22 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * You can search year, imdb points and casts
 * You can add all search results
 
-(Türkçe)
+(TÃ¼rkÃ§e)
 * En Son Fragmanlar
 * Kolay Kurulum
-* Kullanıcılar için arayüz
+* KullanÄ±cÄ±lar iÃ§in arayÃ¼z
 * Otomatik Fragman ekleme
 * Toplu Fragman ekleme
-* Ücretsiz ve Sınırsız Hizmet
-* tüm temalara ayarlana bilme özelliği
+* Ãœcretsiz ve SÄ±nÄ±rsÄ±z Hizmet
+* tÃ¼m temalara ayarlana bilme Ã¶zelliÄŸi
 * otomatik tag
 * otomatik poster
-* otomatik imdb puanı
-* otomatik tür
+* otomatik imdb puanÄ±
+* otomatik tÃ¼r
 * otomatik oyuncu 
-* yıl imdb puan oyuncu tür  kriterlerine göre  kategorilendirme
-* Yıl,imdb id,imdb puan,oyuncu,tür kriterlerinde arama
-* Arama Sonucuna Göre toplu fragman ekleme
+* yÄ±l imdb puan oyuncu tÃ¼r  kriterlerine gÃ¶re  kategorilendirme
+* YÄ±l,imdb id,imdb puan,oyuncu,tÃ¼r kriterlerinde arama
+* Arama Sonucuna GÃ¶re toplu fragman ekleme
 
 == Installation ==
 1. Upload `trailerapi.zip` to the `/wp-content/plugins/` directory
@@ -69,22 +69,22 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * You can search year, imdb points and casts
 * You can add all search results
 
-(Türkçe)
+(TÃ¼rkÃ§e)
 * En Son Fragmanlar
 * Kolay Kurulum
-* Kullanıcılar için arayüz
+* KullanÄ±cÄ±lar iÃ§in arayÃ¼z
 * Otomatik Fragman ekleme
 * Toplu Fragman ekleme
-* Ücretsiz ve Sınırsız Hizmet
-* tüm temalara ayarlana bilme özelliği
+* Ãœcretsiz ve SÄ±nÄ±rsÄ±z Hizmet
+* tÃ¼m temalara ayarlana bilme Ã¶zelliÄŸi
 * otomatik tag
 * otomatik poster
-* otomatik imdb puanı
-* otomatik tür
+* otomatik imdb puanÄ±
+* otomatik tÃ¼r
 * otomatik oyuncu 
-* yıl imdb puan oyuncu tür  kriterlerine göre  kategorilendirme
-* Yıl,imdb id,imdb puan,oyuncu,tür kriterlerinde arama
-* Arama Sonucuna Göre toplu fragman ekleme
+* yÄ±l imdb puan oyuncu tÃ¼r  kriterlerine gÃ¶re  kategorilendirme
+* YÄ±l,imdb id,imdb puan,oyuncu,tÃ¼r kriterlerinde arama
+* Arama Sonucuna GÃ¶re toplu fragman ekleme
 
 
 = 1.0 =
