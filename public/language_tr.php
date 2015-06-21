@@ -61,6 +61,16 @@ $GLOBALS['language']=array(
 'second'=>'Saniye',
 'cronnotexits'=>'Çalışan Bir Zamanlayıcı Yok Zamanlayıcıyı Çalıştırmak İstermisiniz?',
 'cronnotauto'=>'Lütfen Admin Panelden Otomatik Eklemeyi Açınız.',
-
+'search'=>'Fragman Ara',
+'genre'=>'Tür',
+'selectgenre'=>'Tür Seçiniz',
+'name'=>'Film İsmi',
+'example'=>'Örnek',
+'first_date'=>'Başlangıç Tarihi',
+'last_date'=>'Bitiş Tarihi',
+'orderby'=>'Sıralama',
+'or'=>'Veya',
+'nottingmovietrailer'=>'Fragman Bulunamadı',
+'page'=>'Sayfalar',
 )
 ?>

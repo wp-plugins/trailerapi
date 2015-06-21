@@ -61,6 +61,17 @@ $GLOBALS['language']=array(
 'second'=>'Segundo',
 'cronnotexits'=>'Cron Jobs salidas. ¿Está usted funciona Cron Job?',
 'cronnotauto'=>'Configuraciones de admin Página En automáticamente Añadir Plase',
+'search'=>'Trailer Buscar',
+'genre'=>'género',
+'selectgenre'=>'Seleccionar Género',
+'name'=>'Nombre de la película',
+'example'=>'ejemplo',
+'first_date'=>'Primera Fecha',
+'last_date'=>'Ultima Cita',
+'orderby'=>'Ordenar por',
+'or'=>'o',
+'nottingmovietrailer'=>'Notting Movie Trailer',
+'page'=>'Páginas',
 
 )
 ?>

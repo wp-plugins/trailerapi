@@ -12,11 +12,96 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 == Description ==
 With this plugin you can add latest movie trailers to your wordpress site manually or automatically . Improvements are on their way.
 
+* Last minute trailers
+* Easy installation
+* Clean interface
+* Automatic trailer add
+* Cumulative trailer add
+* Free(as in beer) and limitless service
+* You can intergrate this plugin to every wordpress theme
+* Automatic tag system
+* Automatic movie poster
+* Automatic IMDB points
+* Automatic genre
+* Automatic casting
+* You can categorize searching criterias as year, imdb points and casts
+* You can search year, imdb points and casts
+* You can add all search results
+
+(Türkçe)
+* En Son Fragmanlar
+* Kolay Kurulum
+* Kullanýcýlar için arayüz
+* Otomatik Fragman ekleme
+* Toplu Fragman ekleme
+* Ücretsiz ve Sýnýrsýz Hizmet
+* tüm temalara ayarlana bilme özelliði
+* otomatik tag
+* otomatik poster
+* otomatik imdb puaný
+* otomatik tür
+* otomatik oyuncu 
+* yýl imdb puan oyuncu tür  kriterlerine göre  kategorilendirme
+* Yýl,imdb id,imdb puan,oyuncu,tür kriterlerinde arama
+* Arama Sonucuna Göre toplu fragman ekleme
+
 == Installation ==
 1. Upload `trailerapi.zip` to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+= 1.0 =
+* First version
+= 1.1 =
+* Last minute trailers
+* Easy installation
+* Clean interface
+* Automatic trailer add
+* Cumulative trailer add
+* Free(as in beer) and limitless service
+* You can intergrate this plugin to every wordpress theme
+* Automatic tag system
+* Automatic movie poster
+* Automatic IMDB points
+* Automatic genre
+* Automatic casting
+* You can categorize searching criterias as year, imdb points and casts
+* You can search year, imdb points and casts
+* You can add all search results
+
+(Türkçe)
+* En Son Fragmanlar
+* Kolay Kurulum
+* Kullanýcýlar için arayüz
+* Otomatik Fragman ekleme
+* Toplu Fragman ekleme
+* Ücretsiz ve Sýnýrsýz Hizmet
+* tüm temalara ayarlana bilme özelliði
+* otomatik tag
+* otomatik poster
+* otomatik imdb puaný
+* otomatik tür
+* otomatik oyuncu 
+* yýl imdb puan oyuncu tür  kriterlerine göre  kategorilendirme
+* Yýl,imdb id,imdb puan,oyuncu,tür kriterlerinde arama
+* Arama Sonucuna Göre toplu fragman ekleme
+
 
 = 1.0 =
 * First version
+= 1.1 =
+* Last minute trailers
+* Easy installation
+* Clean interface
+* Automatic trailer add
+* Cumulative trailer add
+* Free(as in beer) and limitless service
+* You can intergrate this plugin to every wordpress theme
+* Automatic tag system
+* Automatic movie poster
+* Automatic IMDB points
+* Automatic genre
+* Automatic casting
+* You can categorize searching criterias as year, imdb points and casts
+* You can search year, imdb points and casts
+* You can add all search results

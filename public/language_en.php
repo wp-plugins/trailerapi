@@ -61,6 +61,16 @@ $GLOBALS['language']=array(
 'second'=>'Second',
 'cronnotexits'=>'Cron Jobs Exits. Are You Run Cron Job?',
 'cronnotauto'=>'Admin Settings Page On Automatically Add Plase',
-
+'search'=>'Movie Trailer Search',
+'genre'=>'Genre',
+'selectgenre'=>'Select Genre',
+'name'=>'Movie Name',
+'example'=>'Example',
+'first_date'=>'First Date',
+'last_date'=>'Last Date',
+'orderby'=>'Order By',
+'or'=>'Or',
+'nottingmovietrailer'=>'Notting Movie Trailer',
+'page'=>'Pages',
 )
 ?>

@@ -2,6 +2,7 @@
 ob_start();
 error_reporting(0);
 /*
+
 assert_options(ASSERT_ACTIVE, 1);
 assert_options(ASSERT_BAIL, 1);
 assert_options(ASSERT_QUIET_EVAL, 1);
@@ -27,6 +28,7 @@ function LTM_install() {
     $ltm_options = $wpdb->prefix.'ltm_options';
 	$ltm_trailer = $wpdb->prefix.'ltm_trailer';
 	$charset_collate = $wpdb->get_charset_collate();
+
 	$ltm_options_sql = "CREATE TABLE $ltm_options (
   id int(11) NOT NULL AUTO_INCREMENT,
   trailer int(11) NOT NULL DEFAULT '1',
@@ -69,10 +71,17 @@ function LTM_install() {
 ) $charset_collate;";
 
 
-	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
 	dbDelta( $ltm_options_sql );
 	dbDelta( $ltm_trailer_sql );
+	add_option('LTM_version','1.0');
+
+	
+
+	
+	
+	
 /*	$option_sql='SELECT COUNT(*) FROM '.$ltm_options.' WHERE id=1 ';
 		$wpdb->get_results($option_sql);
 $optCount = $wpdb->num_rows;
@@ -133,9 +142,15 @@ $wpdb->insert(
 */
 	//add_option( 'LTM_db_install', 'yes' );
 }
+$ltm_current_version=get_option('LTM_version');
+if($ltm_global_version!=$ltm_current_version){
+LTM_update();
+}
+
 if(!empty($_GET['repair'])){
 LTM_drop();
 }
+
 function LTM_drop() {
 	global $wpdb;
     $ltm_options = $wpdb->prefix.'ltm_options';
@@ -144,6 +159,7 @@ function LTM_drop() {
 	$ltm_trailer_drop_sql="DROP TABLE ".$ltm_trailer;
 	$wpdb->query($ltm_options_drop_sql,ARRAY_A);
 	$wpdb->query($ltm_trailer_drop_sql,ARRAY_A);
+	delete_option('LTM_version');
 	}
 	
 function LTM_installed() {
@@ -154,7 +170,8 @@ function LTM_installed() {
 	$ltm_options_Count_array=$wpdb->get_results($ltm_options_control_sql,ARRAY_A);
 		$ltm_trailer_control_sql="SHOW TABLES LIKE '%".$ltm_trailer."%'";
 	$ltm_trailer_Count_array=$wpdb->get_results($ltm_trailer_control_sql,ARRAY_A);
-    if ( $ltm_options_Count_array[0] == "" OR $ltm_trailer_Count_array=="") {
+    if ( empty($ltm_options_Count_array[0]) OR empty($ltm_trailer_Count_array[0])) {
+
         LTM_install();
     }else{
 	if($ltm_options_Count_array[0] == ""){
@@ -181,6 +198,7 @@ $cron_menu=$GLOBALS['language']['cronmenu'];
 }
 	add_menu_page('Admin', 'Last Movie Trailer', 'manage_options', 'LMT_admin', 'LMT_admin', plugins_url( 'LTM/icon-other.png' ) ); 
 	add_submenu_page( 'LMT_admin', $GLOBALS['language']['adminsettings'],  $GLOBALS['language']['adminsettings'], 'manage_options', 'LMT_admin', 'LMT_admin');
+	add_submenu_page( 'LMT_admin', $GLOBALS['language']['search'],  $GLOBALS['language']['search'], 'manage_options', 'LMT_search', 'LMT_search');
 	add_submenu_page( 'LMT_admin', $GLOBALS['language']['addmovie'], $GLOBALS['language']['addmovie'], 'manage_options', 'LMT_add', 'LMT_add');
 	add_submenu_page( 'LMT_admin',$GLOBALS['language']['addedmovie'], $GLOBALS['language']['addedmovie'], 'manage_options', 'LMT_added', 'LMT_added');
 	add_submenu_page( 'LMT_admin', $GLOBALS['language']['notaddedmovie'], $GLOBALS['language']['notaddedmovie'], 'manage_options', 'LMT_notadd', 'LMT_notadd');
@@ -193,9 +211,435 @@ $cron_menu=$GLOBALS['language']['cronmenu'];
   if ( isset($_POST['moviessubmit'] ) ) {
 moviesave();
  }
+   if ( isset($_POST['moviessearchsubmit'] ) ) {
+moviesearchsave();
+ }
+ function moviesearchsave(){
+	global $wpdb;
+	  	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
+			$ltm_options = $wpdb->prefix . 'ltm_options';
+			$api_url=$_POST['api_url'];
+			$wp_version=get_bloginfo('version');
+$api_args = array(
+    'timeout'     => 5,
+    'redirection' => 5,
+    'httpversion' => '1.0',
+    'user-agent'  => 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ),
+    'blocking'    => true,
+    'headers'     => array(),
+    'cookies'     => array(),
+    'body'        => null,
+    'compress'    => false,
+    'decompress'  => true,
+    'sslverify'   => true,
+    'stream'      => false,
+    'filename'    => null
+); 
+$api_url_content_array=wp_remote_get( $api_url,$api_args);
+$api_url_content=$api_url_content_array['body'];
+if(!$xml = simplexml_load_string($api_url_content))
+{ 
+}else{
+if(empty($xml->error_status)){
+
+	foreach( $xml as $film ) {
+	if(!empty($_POST['movie_add_list'])){
+    if(in_array($film->did,$_POST['movie_add_list'])) {
+	$user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
+$ltm_trailer_sql= "SELECT movie_id FROM ".$ltm_trailer." WHERE movie_id='".$film->did."'";
+	$wpdb->get_results($ltm_trailer_sql);
+	$trailertCount = $wpdb->num_rows;
+$movie_status=1;
+	if($trailertCount==0){
+$wpdb->insert( 
+	$ltm_trailer, 
+	array( 
+		'movie_name' => $film->name,
+		'movie_poster' => $film->poster,
+		'movie_id' => $film->did,
+		'movie_description' =>$film->description,
+		'movie_year' =>$film->year,
+		'movie_producer' =>$film->producer,
+		'movie_imdb' =>$film->imdb,
+		'movie_cast' =>$film->cast,
+		'movie_genre' =>$film->genre,
+		'movie_status' => $movie_status
+	), 
+	array( 
+		'%s', //movie_name
+		'%s', //movie_poster
+		'%s', //movie_did
+		'%s', //movie_description
+		'%s', // movie_year
+		'%s',// movie_producer
+		'%s', //movie_imdb
+		'%s', //movie_cast
+		'%s', //movie_genre
+		'%d' //movie_status
+	) 
+);
+
+}
+
+$movie_content='<iframe src="//www.dailymotion.com/embed/video/{embed}" width="{width}" height="{height}" frameborder="0" allowfullscreen="allowfullscreen"></iframe>';
+
+$movie_content=str_replace("{embed}",$film->did,$movie_content);
+
+$movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
+
+$movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
+
+$movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
+$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($film->name,$film->cast,$film->year),$user_options[0]['post_description']);
+//$movie_content='[code language="html" ]'.$movie_content.'[/code]';
+
+$movie_name=str_replace("%%title%%",$film->name,$user_options[0]['title']);
+	$post = array(
+     'post_author' => 1,
+     'post_content' =>$movie_content,
+     'post_status' => "future",
+     'post_title' => $movie_name,
+    // 'post_date'	=> date('Y-m-d H:i:s', strtotime(($time*45).' minutes +'.mt_rand(20, 200).' seconds')),
+     // 'post_parent' => '',
+     'post_type' => "post"
+     );
+
+	      $post_id = wp_insert_post( $post);
+		 
+
+$image_ext=substr( str_replace("-xlarge","",$film->poster), -4);
+$image_ext=str_replace(".","",$image_ext);
+$image_save_name=$film->did.".".$image_ext;
+$file=image_save(str_replace("-xlarge","",$film->poster),$image_save_name);
+$wp_filetype = wp_check_filetype( $file, null );
+	$attachment = array(
+    'post_mime_type' => $wp_filetype['type'],
+    'post_title' => preg_replace('/.[^.]+$/', '', basename( $file) ),
+    //'post_content' => '',
+    //'post_author' => 1,
+    //'post_status' => 'inherit',
+    'post_type' => 'attachment',
+    'post_parent' =>  $post_id,
+    'guid' => $wp_upload_dir['url'] . '/' . basename( $file)
+	);
+require_once( ABSPATH . 'wp-admin/includes/image.php' );
+	$attach_id = wp_insert_attachment( $attachment, $file);
+	$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+wp_update_attachment_metadata( $attach_id, $attach_data );
+$movie_tag=str_replace('%%tagtitle%%',$film->name,$user_options[0]['category_title']);
+wp_set_post_tags($post_id,$movie_tag);
+if(!empty($user_options[0]['gender'])){
+if(taxonomy_exists($user_options[0]['gender'])){
+if($user_options[0]['gendeauto']==1){
+$movie_genre_array=explode(",",$film->genre);
+for($g=0;$g<count($movie_genre_array);$g++){
+$movie_genre=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
+if($user_options[0]['gender']=="category"){
+	if(is_category( $movie_genre)){
+		$movie_genre_cat_id[]=get_cat_ID($movie_genre);
+		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
+	}else{
+	
+		$movie_genre_cat_id[]=  wp_create_category($movie_genre);
+		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$movie_genre , $user_options[0]['gender'] );
+ }
+}
+}else{
+$movie_genre=str_replace("%%gendetitle%%",$film->genre,$user_options[0]['gende_title']);	
+ wp_set_post_terms( $post_id,$movie_genre, $user_options[0]['gender'] );
+}
+
+}else{
+if($user_options[0]['gendeauto']==1){
+$movie_genre_array=explode(",",$film->genre);
+for($g=0;$g<count($movie_genre_array);$g++){
+$movie_genre=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
+add_post_meta( $post_id, $user_options[0]['gender'],$movie_genre );
+}
+}else{
+add_post_meta( $post_id, $user_options[0]['gender'],$film->genre );
+}
+}
+}else{
+
+}
+if(!empty($user_options[0]['year'])){
+$movie_year=str_replace("%%yeartitle%%",$film->year,$user_options[0]['year_title']);
+if(taxonomy_exists($user_options[0]['year'])){
+if($user_options[0]['year']=="category"){
+	if(is_category( $movie_year)){
+		$movie_year_cat_id[]=get_cat_ID($movie_year);
+		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
+	}else{
+	
+		$movie_year_cat_id[]=  wp_create_category($movie_year);
+		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$movie_year , $user_options[0]['year'] );
+ }
+}else{
+add_post_meta( $post_id, $user_options[0]['year'],$film->year);
+}
+}else{
+
+}
+if(!empty($user_options[0]['producer'])){
+$movie_producer=str_replace("%%producertitle%%",$film->producer,$user_options[0]['producer_title']);
+if(taxonomy_exists($user_options[0]['producer'])){
+if($user_options[0]['producer']=="category"){
+	if(is_category( $movie_producer)){
+		$movie_producer_cat_id[]=get_cat_ID($movie_producer);
+		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
+	}else{
+	
+		$movie_producer_cat_id[]=  wp_create_category($movie_producer);
+		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$movie_producer , $user_options[0]['producer'] );
+ }
+}else{
+add_post_meta( $post_id, $user_options[0]['producer'],$film->producer );
+}
+}else{
+
+}
+if(!empty($user_options[0]['actor'])){
+if(taxonomy_exists($user_options[0]['actor'])){
+if($user_options[0]['actorauto']==1){
+$movie_genre_array=explode(",",$film->cast);
+for($g=0;$g<count($movie_cast_array);$g++){
+$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
+if($user_options[0]['actor']=="category"){
+	if(is_category( $movie_cast)){
+		$movie_cast_cat_id[]=get_cat_ID($movie_cast);
+		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
+	}else{
+	
+		$movie_cast_cat_id[]=  wp_create_category($movie_cast);
+		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$movie_cast, $user_options[0]['actor'] );
+ }
+}
+}else{
+ $movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
+ wp_set_post_terms( $post_id,$movie_cast, $user_options[0]['actor'] );
+}
+
+}else{
+if($user_options[0]['actorauto']==1){
+$movie_cast_array=explode(",",$film->cast);
+for($g=0;$g<count($movie_cast_array);$g++){
+$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
+add_post_meta( $post_id, $user_options[0]['actor'],$movie_cast );
+}
+}else{
+add_post_meta( $post_id, $user_options[0]['actor'],$film->cast);
+}
+}
+}else{
+
+}
+set_post_thumbnail( $post_id, $attach_id );
+
+	
+}
+}
+if(!empty($_POST['movie_not_add_list'])){
+if(in_array($film->did,$_POST['movie_not_add_list'])){
+	$movie_status=2;
+$wpdb->insert( 
+	$ltm_trailer, 
+	array( 
+		'movie_name' => $film->name,
+		'movie_poster' => $film->poster,
+		'movie_id' => $film->did,
+		'movie_description' =>$film->description,
+		'movie_year' =>$film->year,
+		'movie_producer' =>$film->producer,
+		'movie_imdb' =>$film->imdb,
+		'movie_cast' =>$film->cast,
+		'movie_genre' =>$film->genre,
+		'movie_status' => $movie_status
+	), 
+	array( 
+		'%s', //movie_name
+		'%s', //movie_poster
+		'%s', //movie_did
+		'%s', //movie_description
+		'%s', // movie_year
+		'%s',// movie_producer
+		'%s', //movie_imdb
+		'%s', //movie_cast
+		'%s', //movie_genre
+		'%d' //movie_status
+	) 
+);
+}
+}
+}
+}
+}
+
+ }
    if ( isset($_POST['reruncron'] ) ) {
 ltm_movie_save();
  }
+   function LMT_search() {
+     global $wpdb;
+	 $ltm_options = $wpdb->prefix . 'ltm_options';
+	 	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
+	 $user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
+ if ( isset($_POST['searchsubmit'] ) ) {
+ $language_req='language_'.$user_options[0]['language'].'.php';
+require_once($language_req);
+$api_url='http://trailerapi.com/api/api.php?user_trailer_limit=1&language='.$user_options[0]['language'];
+if(!empty($_POST['genresearch'])){
+$api_url.='&genre='.$_POST['genresearch'];
+
+}
+if(!empty($_POST['imdbidsearch'])){
+$api_url.='&imdbid='.$_POST['imdbidsearch'];
+}
+if(!empty($_POST['namesearch'])){
+$api_url.='&name='.$_POST['namesearch'];
+}
+if(!empty($_POST['castsearch'])){
+$api_url.='&cast='.$_POST['castsearch'];
+}
+if(!empty($_POST['first_datesearch'])){
+$api_url.='&first_date='.$_POST['first_datesearch'];
+}
+if(!empty($_POST['last_datesearch'])){
+$api_url.='&last_date='.$_POST['last_datesearch'];
+}
+if(!empty($_POST['orderbydsearch'])){
+$api_url.='&order='.$_POST['orderbydsearch'];
+}
+if(!empty($_POST['yearsearch'])){
+$api_url.='&year='.$_POST['yearsearch'];
+}
+$wp_version=get_bloginfo('version');
+$api_args = array(
+    'timeout'     => 5,
+    'redirection' => 5,
+    'httpversion' => '1.0',
+    'user-agent'  => 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ),
+    'blocking'    => true,
+    'headers'     => array(),
+    'cookies'     => array(),
+    'body'        => null,
+    'compress'    => false,
+    'decompress'  => true,
+    'sslverify'   => true,
+    'stream'      => false,
+    'filename'    => null
+); 
+$api_url_content_array=wp_remote_get( $api_url,$api_args);
+$api_url_content=$api_url_content_array['body'];
+if(!$xml = simplexml_load_string($api_url_content))
+{ 
+}else{
+?>
+<form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" id="add_form">
+	<input type="submit"  name="moviessearchsubmit" value="<?php echo $GLOBALS['language']['selectsadd']; ?>" class="alladd">
+<br/><input id="alladd_checked" name="alladd_checked" type="checkbox" onclick="add_checked()" /> <?php echo $GLOBALS['language']['checkalladd']; ?>
+&nbsp;&nbsp;
+<input id="allnotadd_checked" name="allnotadd_checked" type="checkbox" onclick="notadd_checked()" /> <?php echo $GLOBALS['language']['checknotalladd']; ?>
+<input id="api_url" name="api_url" type="hidden" value="<?php echo $api_url;?>" >
+<?php
+if(empty($xml->error_status)){
+	$movie_list_id=1;
+	foreach( $xml as $film ) {
+	$ltm_trailer_sql= "SELECT movie_id FROM ".$ltm_trailer." WHERE movie_id='".$film->did."'";
+	$wpdb->get_results($ltm_trailer_sql);
+	$trailertCount = $wpdb->num_rows;
+	if($trailertCount==0){
+	?>
+
+<div class="trailer normal caption"><div class="poster"><img src="<?php echo str_replace("-xlarge","",$film->poster); ?>" alt="<?php echo $film->name;?>" border="0"></div>
+<div class="description"><legend><span class="number"><?php echo $movie_list_id; ?></span><?php echo $film->name;?></legend><p><?php echo $film->description;?><br/>İmdb:<?php echo $film->imdb;?><br/><?php echo $GLOBALS['language']['producer'];?>:<?php echo $film->producer;?><br/><?php echo $GLOBALS['language']['cast']; ?>:<?php echo $film->cast;?></p><h3><input type="checkbox" id="addcheckbox" name="movie_add_list[]" value="<?php echo $film->did;?>"><?php echo $GLOBALS['language']['addmovietrailer']; ?>&nbsp;<input type="checkbox" id="notaddcheckbox" name="movie_not_add_list[]" value="<?php  echo $film->did;?>"> <?php echo $GLOBALS['language']['notaddmovietrailer']; ?></p><p>&nbsp;</h3></div></div>
+
+<?php
+$movie_list_id++;
+}
+	}
+	}else{
+	echo $xml->error_status;
+	}
+
+}
+if($movie_list_id==1){
+echo '<div>'.$GLOBALS['language']['nottingmovietrailer'].'</div>';
+}
+ }else{
+ ?>
+ <form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" >
+
+ <table class="table">
+ <tr><td  align="center"> <?php
+ echo $GLOBALS['language']['genre'];
+ ?></td>
+ <td>
+         <select id="genresearch" name="genresearch">
+		  <option  value=""><?php echo  $GLOBALS['language']['selectgenre']; ?></option>
+ <?php
+$genre_array=array(
+			"Action",
+			"Adventure",
+			"Animation",
+			"Biography",
+			"Comedy",
+			"Crime",
+			"Documentary",
+			"Drama",
+			"Family",
+			"Fantasy",
+			"Film-Noir",
+			"History",
+			"Horror",
+			"Music",
+			"Musical",
+			"Mystery",
+			"Romance",
+			"Sci-Fi",
+			"Sport",
+			"Thriller",
+			"War"
+		);
+
+ foreach( $genre_array as $genre_list){ 
+
+ ?>
+
+ <option  value="<?php echo  $genre_list; ?>"><?php echo  genre_translate($genre_list,$user_options[0]['language']); ?></option>
+ <?php
+
+   }
+   ?>
+   </td>
+   </tr>
+ <tr><td > İMDB id:</td><td ><input name="imdbidsearch" type="text" /><?php  echo $GLOBALS['language']['example'];  ?>:tt1234567</td></tr>
+  <tr><td ><?php  echo $GLOBALS['language']['name'];  ?></td><td ><input name="namesearch" type="text" /></td></tr>
+    <tr><td ><?php  echo $GLOBALS['language']['cast'];  ?></td><td ><input name="castsearch" type="text" /><?php  echo $GLOBALS['language']['example'];  ?>: Bruce Willis,Jessica Alba</td></tr> 
+	 <tr><td ><?php  echo $GLOBALS['language']['year'];  ?></td><td ><input name="yearsearch" type="text" /><?php  echo $GLOBALS['language']['example'];  ?>: 2015,2014</td></tr>  
+	<tr><td ><?php  echo $GLOBALS['language']['first_date'];  ?></td><td ><input name="first_datesearch" type="text" /><?php  echo $GLOBALS['language']['example'];  ?>: 2015-12-25</td></tr>
+	<tr><td ><?php  echo $GLOBALS['language']['last_date'];  ?></td><td ><input name="last_datesearch" type="text" /><?php  echo $GLOBALS['language']['example'];  ?>: 2015-12-25</td></tr>
+	 <tr><td > <?php  echo $GLOBALS['language']['orderby'];  ?>:</td><td ><input name="orderbydsearch" type="text" /><?php  echo $GLOBALS['language']['example'];  ?>:ASC <?php  echo $GLOBALS['language']['or'];  ?> DESC</td></tr>
+   <tr><td colspan="2" align="center">
+        <button type="submit" name="searchsubmit" ><?php  echo $GLOBALS['language']['search'];?></button>
+		</td></tr>
+   </table>
+ </form>
+   <?php
+   }
+   }
   function LMT_cronlist() {
 	  $last_time=get_option('LTM_cron_time');
 $current_time=time();
@@ -273,6 +717,7 @@ $movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
 $movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
 
 $movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
+$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
 
 //$movie_content='[code language="html" ]'.$movie_content.'[/code]';
 
@@ -289,7 +734,7 @@ $movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0
 
 	      $post_id = wp_insert_post( $post);
 		 
-	curl("http://trailers.apple.com/");
+
 $image_ext=substr( str_replace("-xlarge","",$movie_list[0]['movie_poster']), -4);
 $image_ext=str_replace(".","",$image_ext);
 $image_save_name=$movie_list[0]['movie_id'].".".$image_ext;
@@ -448,11 +893,6 @@ unset($movie_list);
 	
  function moviesave(){
 	global $wpdb;
-	$wp_posts=$wpdb->prefix . 'posts';
-$sorgu = $wpdb->get_results("SELECT post_date FROM {$wp_posts} WHERE post_type = 'post' ORDER BY post_date DESC LIMIT 1", ARRAY_A);
-$simdi = date('Y-m-d H:i:s', strtotime('+3 hours +45 minutes'));
-$zaman = (strtotime($sorgu[0]['post_date']) > strtotime($simdi)) ? $sorgu[0]['post_date'] : $simdi;
-$time = 0;
 	  	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
 			$ltm_options = $wpdb->prefix . 'ltm_options';
 	if(!empty($_POST['movie_add_list'])) {
@@ -471,7 +911,7 @@ $movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
 $movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
 
 $movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
-
+$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
 //$movie_content='[code language="html" ]'.$movie_content.'[/code]';
 
 $movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0]['title']);
@@ -484,10 +924,10 @@ $movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0
      // 'post_parent' => '',
      'post_type' => "post"
      );
-	 $time++;
+
 	      $post_id = wp_insert_post( $post);
 		 
-	curl("http://trailers.apple.com/");
+
 $image_ext=substr( str_replace("-xlarge","",$movie_list[0]['movie_poster']), -4);
 $image_ext=str_replace(".","",$image_ext);
 $image_save_name=$movie_list[0]['movie_id'].".".$image_ext;
@@ -729,6 +1169,7 @@ wp_clear_scheduled_hook( 'ltm_movie_save');
 		'width' => $_POST['width'],	// string
 		'height' => $_POST['height'],	// string
 		'title' => $_POST['title'],
+		'post_description' => $_POST['post_description'],
 		'category_title' => $_POST['category_title'],
 		'actor' => $_POST['actor'],
 		'actor_title' => $_POST['actor_title'],
@@ -749,6 +1190,7 @@ wp_clear_scheduled_hook( 'ltm_movie_save');
 		'%d',	//width
 		'%d',	//height
 		'%s',	//title
+		'%s',	//post_description
 		'%s',	//category_title
 		'%s',	//actor
 		'%s',	//actor_title
@@ -781,7 +1223,7 @@ $user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", 
 $language_req='language_'.$user_options[0]['language'].'.php';
 require_once($language_req);
 $api_url='http://trailerapi.com/api/api.php?user_trailer_limit='.$user_options[0]['trailer']."&language=".$user_options[0]['language'];
-
+$wp_version=get_bloginfo('version');
 $api_args = array(
     'timeout'     => 5,
     'redirection' => 5,
@@ -918,15 +1360,17 @@ $wpdb->update(
      <textarea name="embed" cols="50" rows="4" ><?php echo $user_options[0]['embed_code']; ?></textarea>
 	  </td></tr><tr><td>  <legend><span class="number">4</span><?php echo $GLOBALS['language']['posttitle']; ?>:</legend>
      <input name="title" type="text" value="<?php echo $user_options[0]['title']; ?>" />
-	     </td><td> <legend><span class="number">5</span><?php echo $GLOBALS['language']['tembedcodewh']; ?>:</legend>
+	 </td><td><legend><span class="number">5</span><?php echo $GLOBALS['language']['postdescription']; ?>:</legend>
+     <textarea name="post_description" cols="50" rows="4" ><?php echo $user_options[0]['post_description']; ?></textarea>
+	     </td><td> <legend><span class="number">6</span><?php echo $GLOBALS['language']['tembedcodewh']; ?>:</legend>
 		  <?php echo $GLOBALS['language']['width']; ?>:
 		  <input name="width" type="text" value="<?php echo $user_options[0]['width']; ?>" />
 		  <?php echo $GLOBALS['language']['height']; ?>:
 		  <input name="height" type="text"  value="<?php echo $user_options[0]['height']; ?>"/>
 		  	 
-  </td><td>  <legend><span class="number">6</span><?php echo $GLOBALS['language']['tagtitle']; ?>:</legend>
+  </td></tr><tr><td>  <legend><span class="number">7</span><?php echo $GLOBALS['language']['tagtitle']; ?>:</legend>
     <textarea name="category_title"  cols="50" rows="4"><?php echo $user_options[0]['category_title']; ?></textarea>
-  </td></tr><tr><td>  <legend><span class="number">7</span><?php echo $GLOBALS['language']['selectactortax']; ?> :</legend>
+  </td><td>  <legend><span class="number">8</span><?php echo $GLOBALS['language']['selectactortax']; ?> :</legend>
     <select id="actor" name="actor">
 	    <option value="" > <?php echo $GLOBALS['language']['selectactortax']; ?></option>
 <?php
@@ -944,12 +1388,12 @@ foreach($meta_keys as $meta_key){
 }
 ?>
 </select>
-  </td><td> <legend><span class="number">8</span><?php echo $GLOBALS['language']['actortitle']; ?>:</legend>
+  </td><td> <legend><span class="number">9</span><?php echo $GLOBALS['language']['actortitle']; ?>:</legend>
      <input name="actor_title" type="text" value="<?php echo $user_options[0]['actor_title']; ?>" />
 	   <legend><?php echo $GLOBALS['language']['automaticactortax']; ?></legend>
       
           <input type="checkbox" id="yes" value="1" name="actoryes" <?php if($user_options[0]['actorauto']==1){ ?>  checked="checked" <?php } ?>><label class="light" for="development"><?php echo $GLOBALS['language']['yes']; ?></label>
-  </td><td> <legend><span class="number">9</span><?php echo $GLOBALS['language']['selectyeartax']; ?> :</legend>
+  </td></tr><tr><td> <legend><span class="number">10</span><?php echo $GLOBALS['language']['selectyeartax']; ?> :</legend>
     <select id="year" name="year">
 	    <option value="" > <?php echo $GLOBALS['language']['selectyeartax']; ?></option>
 <?php
@@ -968,9 +1412,9 @@ foreach($meta_keys as $meta_key){
 ?>
 </select>
 
-   </td></tr><tr><td> <legend><span class="number">10</span><?php echo $GLOBALS['language']['yeartitle']; ?>:</legend>
+   </td><td> <legend><span class="number">11</span><?php echo $GLOBALS['language']['yeartitle']; ?>:</legend>
      <input name="year_title" type="text" value="<?php echo $user_options[0]['year_title']; ?>" />
-  </td><td> <legend><span class="number">11</span><?php echo $GLOBALS['language']['selectgendetax']; ?> :</legend>
+  </td><td> <legend><span class="number">12</span><?php echo $GLOBALS['language']['selectgendetax']; ?> :</legend>
     <select id="gender" name="gender">
 	 <option value="" > <?php echo $GLOBALS['language']['selectgendetax']; ?></option>
 <?php
@@ -991,11 +1435,11 @@ foreach($meta_keys as $meta_key){
   <legend><?php echo $GLOBALS['language']['automaticgendetax']; ?></legend>
       
           <input type="checkbox" id="yes" value="1" name="gendeyes" <?php if($user_options[0]['gendeauto']==1){ ?>  checked="checked" <?php } ?>><label class="light" for="development"><?php echo $GLOBALS['language']['yes']; ?></label>
-   </td><td><legend><span class="number">12</span><?php echo $GLOBALS['language']['gendetitle']; ?>:</legend>
-     <input name="gende_title" type="text" value="<?php echo $user_options[0]['gende_title']; ?>" /></td></tr><tr>
-	<td> <legend><span class="number">13</span><?php echo $GLOBALS['language']['producertitle']; ?>:</legend>
+   </td></tr><tr><td><legend><span class="number">13</span><?php echo $GLOBALS['language']['gendetitle']; ?>:</legend>
+     <input name="gende_title" type="text" value="<?php echo $user_options[0]['gende_title']; ?>" /></td>
+	<td> <legend><span class="number">14</span><?php echo $GLOBALS['language']['producertitle']; ?>:</legend>
      <input name="producer_title" type="text" value="<?php echo $user_options[0]['producer_title']; ?>" />
-  </td><td><legend><span class="number">14</span><?php echo $GLOBALS['language']['selectproducertax']; ?> :</legend>
+  </td><td><legend><span class="number">15</span><?php echo $GLOBALS['language']['selectproducertax']; ?> :</legend>
     <select id="producer" name="producer">
 	    <option value="" > <?php echo $GLOBALS['language']['selectproducertax']; ?></option>
 <?php
@@ -1012,7 +1456,7 @@ foreach($meta_keys as $meta_key){
 <?php 
 }
 ?>
-</select></td><td></td><tr><td colspan="3" align="center">
+</select></td><tr><td colspan="3" align="center">
         <button type="submit" name="settingsubmit" >Okey</button>
 		</td></tr>
 		</table>
@@ -1026,6 +1470,7 @@ $user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", 
 $language_req='language_'.$user_options[0]['language'].'.php';
 require_once($language_req);
 $api_url='http://trailerapi.com/api/api.php?user_trailer_limit='.$user_options[0]['trailer']."&language=".$user_options[0]['language'];
+$wp_version=get_bloginfo('version');
 $api_args = array(
     'timeout'     => 5,
     'redirection' => 5,
@@ -1161,6 +1606,7 @@ $movie_list_id++;
 }
 ?>
 </from>
+
 <?php
 die();
 return true;
@@ -1176,7 +1622,32 @@ require_once($language_req);
 <?php
 
 		$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
-$query = $wpdb->get_results("SELECT * FROM $ltm_trailer WHERE movie_status='1'  Limit 10", ARRAY_A);
+		$ltm_trailer_sql= "SELECT movie_id FROM ".$ltm_trailer." WHERE movie_status='1'";
+	$wpdb->get_results($ltm_trailer_sql);
+	$pageCount = $wpdb->num_rows;
+	$pageCount=ceil($pageCount/10);
+		$page=@$_GET['page_number'];
+		$page_start=($page/2)-5;
+		if($page_start<0){
+		$page_start=0;
+		if($pageCount<10){
+		$page_stop=$pageCount;
+		}else{
+			$page_stop=10;
+		}
+		}else{
+		$page_stop=$page_start+10;
+		if($pageCount<$page_stop){
+		$page_stop=$pageCount;
+		}else{
+		}
+		}
+		if(empty($page)){
+		$page=0;
+		}else{
+		$page=$page*10;
+		}
+$query = $wpdb->get_results("SELECT * FROM $ltm_trailer WHERE movie_status='1'  ORDER BY id DESC  Limit $page,10", ARRAY_A);
 	$movie_list_id=1;
 	?>
 	<form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" id="add_form">
@@ -1184,6 +1655,12 @@ $query = $wpdb->get_results("SELECT * FROM $ltm_trailer WHERE movie_status='1'  
 <br/><input id="alladd_checked" name="alladd_checked" type="checkbox" onclick="add_checked()" /> <?php echo $GLOBALS['language']['checkalladd']; ?>
 &nbsp;&nbsp;
 <input id="allnotadd_checked" name="allnotadd_checked" type="checkbox" onclick="notadd_checked()" /> <?php echo $GLOBALS['language']['checknotalladd']; ?>
+	<table><tr><td><?php echo $GLOBALS['language']['page']; ?>:</td><td>
+<?php for($p=$page_start;$p<$page_stop;$p++){ 
+$s=$p+1;
+echo '<span class="number"><a href="'.$_SERVER['REQUEST_URI'].'&page_number='.$p.'">'.$s.'</a></span>';
+} 
+?></td></tr></table>
 	<?php
 foreach($query as $row)
 {
@@ -1196,6 +1673,7 @@ $movie_list_id++;
 }
 ?>
 </from>
+
 <?php
 die();
 return true;
@@ -1210,8 +1688,32 @@ require_once($language_req);
 	?>
 <div class="listtitle"><?php echo $GLOBALS['language']['notaddmovietrailerlist']; ?></div>
 <?php
-
-	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
+$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
+		$ltm_trailer_sql= "SELECT movie_id FROM ".$ltm_trailer." WHERE movie_status='2'";
+	$wpdb->get_results($ltm_trailer_sql);
+	$pageCount = $wpdb->num_rows;
+	$pageCount=ceil($pageCount/10);
+		$page=@$_GET['page_number'];
+		$page_start=($page/2)-5;
+		if($page_start<0){
+		$page_start=0;
+		if($pageCount<10){
+		$page_stop=$pageCount;
+		}else{
+			$page_stop=10;
+		}
+		}else{
+		$page_stop=$page_start+10;
+		if($pageCount<$page_stop){
+		$page_stop=$pageCount;
+		}else{
+		}
+		}
+		if(empty($page)){
+		$page=0;
+		}else{
+		$page=$page*10;
+		}
 $query = $wpdb->get_results("SELECT * FROM $ltm_trailer WHERE movie_status='2'  Limit 10", ARRAY_A);
 	$movie_list_id=1;
 	?>
@@ -1220,6 +1722,12 @@ $query = $wpdb->get_results("SELECT * FROM $ltm_trailer WHERE movie_status='2'  
 <br/><input id="alladd_checked" name="alladd_checked" type="checkbox" onclick="add_checked()" /> <?php echo $GLOBALS['language']['checkalladd']; ?>
 &nbsp;&nbsp;
 <input id="allnotadd_checked" name="allnotadd_checked" type="checkbox" onclick="notadd_checked()" /> <?php echo $GLOBALS['language']['checknotalladd']; ?>
+<table><tr><td><?php echo $GLOBALS['language']['page']; ?>:</td><td>
+<?php for($p=$page_start;$p<$page_stop;$p++){ 
+$s=$p+1;
+echo '<span class="number"><a href="'.$_SERVER['REQUEST_URI'].'&page_number='.$p.'">'.$s.'</a></span>';
+} 
+?></td></tr></table>
 	<?php
 foreach($query as $row)
 {
