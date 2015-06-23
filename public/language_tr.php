@@ -72,5 +72,6 @@ $GLOBALS['language']=array(
 'or'=>'Veya',
 'nottingmovietrailer'=>'Fragman Bulunamadı',
 'page'=>'Sayfalar',
+'postdescription'=>'Post Açıklaması ( Boş Bıraklırsa Birşey Eklenmez)',
 )
 ?>

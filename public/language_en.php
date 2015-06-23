@@ -72,5 +72,7 @@ $GLOBALS['language']=array(
 'or'=>'Or',
 'nottingmovietrailer'=>'Notting Movie Trailer',
 'page'=>'Pages',
+'postdescription'=>'Post Comment (is Empty Not Added)',
+
 )
 ?>

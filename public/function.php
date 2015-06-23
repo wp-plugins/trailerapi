@@ -196,7 +196,7 @@ $cron_menu=$GLOBALS['language']['cronmenu']."<span class='update-plugins count-1
 }else{
 $cron_menu=$GLOBALS['language']['cronmenu'];
 }
-	add_menu_page('Admin', 'Last Movie Trailer', 'manage_options', 'LMT_admin', 'LMT_admin', plugins_url( 'LTM/icon-other.png' ) ); 
+	add_menu_page('Admin', 'Last Movie Trailer', 'manage_options', 'LMT_admin', 'LMT_admin', plugin_dir_url( __FILE__ ).'LTM/icon-other.png' ); 
 	add_submenu_page( 'LMT_admin', $GLOBALS['language']['adminsettings'],  $GLOBALS['language']['adminsettings'], 'manage_options', 'LMT_admin', 'LMT_admin');
 	add_submenu_page( 'LMT_admin', $GLOBALS['language']['search'],  $GLOBALS['language']['search'], 'manage_options', 'LMT_search', 'LMT_search');
 	add_submenu_page( 'LMT_admin', $GLOBALS['language']['addmovie'], $GLOBALS['language']['addmovie'], 'manage_options', 'LMT_add', 'LMT_add');
