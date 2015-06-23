@@ -1,19 +1,5 @@
 <?php
-function curl($url) {
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/600.5.17 (KHTML, like Gecko) Version/8.0.5 Safari/600.5.17');
-	curl_setopt($ch, CURLOPT_COOKIEFILE, dirname(__FILE__) . '/cookie.txt');
-	curl_setopt($ch, CURLOPT_COOKIEJAR, dirname(__FILE__) . '/cookie.txt');
-	curl_setopt($ch, CURLOPT_REFERER, 'https://trailers.apple.com/');
-	//curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-	//curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-	$str = curl_exec($ch);
-	curl_close($ch);
-	//echo $str;
-	return $str;
-}
+
 function image_save($resim,$filename){
 
 	$upload_dir = wp_upload_dir();
@@ -42,18 +28,7 @@ function image_save($resim,$filename){
 	return $file;	
 		
 }
-function seoFile($string) {
-	$aranacak = array("�"," ","�","�","�","�","�","�","'","%","�");
-	$degisecek = array("i","-","i","c","g","o","s","u","","","");
-	$string = str_replace($aranacak, $degisecek, strtolower($string));
-	$string = strtolower($string);
-	$string = preg_replace("/[^a-z0-9_\s-]/", "", $string);
-	$string = preg_replace("/[\s-]+/", " ", $string);
-	$string = preg_replace("/[\s_]/", "-", $string);
-	if($string[0] == '-') $string[0] = "";
-	if($string[strlen($string)-1] == '-') $string = substr_replace($string, "", -1);
-	return $string;
-}
+
 
 function dateto($zaman,$suan,$ayrinti=2){
 			$tarihler=array(365*24*60*60	=> $GLOBALS['language']['year'],
@@ -89,6 +64,269 @@ function dateto($zaman,$suan,$ayrinti=2){
 		
 			
 		return $cikti;
+	
+	}
+	function genre_translate( $string, $lang ) {
+	if ( $lang == "tr" ) {
+		$string = str_replace( array(
+			"Action",
+			"Adventure",
+			"Animation",
+			"Biography",
+			"Comedy",
+			"Crime",
+			"Documentary",
+			"Drama",
+			"Family",
+			"Fantasy",
+			"Film-Noir",
+			"History",
+			"Horror",
+			"Music",
+			"Musical",
+			"Mystery",
+			"Romance",
+			"Sci-Fi",
+			"Sport",
+			"Thriller",
+			"War"
+		), array(
+			"Aksiyon",
+			"Macera",
+			"Animasyon",
+			"Biyografi",
+			"Komedi",
+			"Suç",
+			"Belgesel",
+			"Dram",
+			"Aile",
+			"Fantastik",
+			"Kara Film",
+			"Tarihi",
+			"Korku",
+			"Müzik",
+			"Müzik",
+			"Gizem",
+			"Romantik",
+			"Bilim Kurgu",
+			"Spor",
+			"Gerilim",
+			"Savaş"
+		), $string );
+	}
+	if ( $lang == "es" ) {
+		$string = str_replace( array(
+			"Action",
+			"Adventure",
+			"Animation",
+			"Biography",
+			"Comedy",
+			"Crime",
+			"Documentary",
+			"Drama",
+			"Family",
+			"Fantasy",
+			"Film-Noir",
+			"History",
+			"Horror",
+			"Music",
+			"Musical",
+			"Mystery",
+			"Romance",
+			"Sci-Fi",
+			"Sport",
+			"Thriller",
+			"War"
+		), array(
+			"Acción",
+			"Aventura",
+			"Animación",
+			"Biografía",
+			"Comedia",
+			"Crimen",
+			"Documental",
+			"Drama",
+			"Familia",
+			"Fantasía",
+			"Cinenegro",
+			"Historia",
+			"Horror",
+			"Música",
+			"musical",
+			"Misterio",
+			"Pareja",
+			"CienciaFicción",
+			"Sport",
+			"Thriller",
+			"War"
+		), $string );
+	}
+	if ( $lang == "fr" ) {
+		$string = str_replace( array(
+			"Action",
+			"Adventure",
+			"Animation",
+			"Biography",
+			"Comedy",
+			"Crime",
+			"Documentary",
+			"Drama",
+			"Family",
+			"Fantasy",
+			"Film-Noir",
+			"History",
+			"Horror",
+			"Music",
+			"Musical",
+			"Mystery",
+			"Romance",
+			"Sci-Fi",
+			"Sport",
+			"Thriller",
+			"War"
+		), array(
+			"Action",
+			"Aventure",
+			"Animation",
+			"Biographie",
+			"Comédie",
+			"Crime",
+			"Documentaire",
+			"Drama",
+			"Famille",
+			"Fantasy",
+			"Film-Noir",
+			"Histoire",
+			"Horreur",
+			"Musique",
+			"Musical",
+			"Mystère",
+			"Romance",
+			"Sci-Fi",
+			"Sport",
+			"Thriller",
+			"War"
+		), $string );
+	}
+	if ( $lang == "pr" ) {
+		$string = str_replace( array(
+			"Action",
+			"Adventure",
+			"Animation",
+			"Biography",
+			"Comedy",
+			"Crime",
+			"Documentary",
+			"Drama",
+			"Family",
+			"Fantasy",
+			"Film-Noir",
+			"History",
+			"Horror",
+			"Music",
+			"Musical",
+			"Mystery",
+			"Romance",
+			"Sci-Fi",
+			"Sport",
+			"Thriller",
+			"War"
+		), array(
+			"Action",
+			"Aventura",
+			"Animação",
+			"Biografia",
+			"Comedy",
+			"Crime",
+			"Documentary",
+			"Drama",
+			"Família",
+			"Fantasia",
+			"Filmenegro",
+			"História",
+			"Horror",
+			"Music",
+			"musical",
+			"Mistério",
+			"romance",
+			"Sci-Fi",
+			"Sport",
+			"Thriller",
+			"War"
+		), $string );
+	}
+	if ( $lang == "de" ) {
+		$string = str_replace( array(
+			"Action",
+			"Adventure",
+			"Animation",
+			"Biography",
+			"Comedy",
+			"Crime",
+			"Documentary",
+			"Drama",
+			"Family",
+			"Fantasy",
+			"Film-Noir",
+			"History",
+			"Horror",
+			"Music",
+			"Musical",
+			"Mystery",
+			"Romance",
+			"Sci-Fi",
+			"Sport",
+			"Thriller",
+			"War"
+		), array(
+			"Action",
+			"Adventure",
+			"Animation",
+			"Biography",
+			"Comedy",
+			"Crime",
+			"Dokumentarfilm",
+			"Drama",
+			"Familie",
+			"Fantasy",
+			"Film Noir",
+			"History",
+			"Horror",
+			"Music",
+			"Musik",
+			"Mystery",
+			"Romance",
+			"Sci-Fi",
+			"Sport",
+			"Thriller",
+			"War"
+		), $string );
+	}
+
+	return $string;
+}
+	function LTM_update() {
+	global $wpdb;
+    $ltm_options = $wpdb->prefix.'ltm_options';
+	$charset_collate = $wpdb->get_charset_collate();
+	$ltm_version=get_option('LTM_version');
+	if($ltm_version=="1.0"){
+	$ltm_options = $wpdb->prefix.'ltm_options';
+	$update_sql="ALTER TABLE $ltm_options  ADD post_description TEXT NOT NULL AFTER title";
+	$wpdb->query($update_sql);
+			$wpdb->update( 
+	$ltm_options, 
+	array( 
+		'post_description' => '%%title%% Movie : <br> Cast : %%cast%% <br> Release Year : %%year%%',
+	), 
+	array( 'id' => 1 ), 
+	array( 
+		'%d'
+	), 
+	array( '%d' ) 
+);
+	update_option('LTM_version','1.1');
+	}
 	
 	}
 ?>
