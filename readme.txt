@@ -50,7 +50,8 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 2. Activate the plugin through the 'Plugins' menu in WordPress
 == Screenshots ==
 
-1./assets/screenshot-1.jpg
+1. /assets/screenshot-1.jpg
+1. /assets/screenshot-2.jpg
 == Changelog ==
 = 1.0 =
 * First version
