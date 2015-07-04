@@ -49,8 +49,8 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 1. Upload `trailerapi.zip` to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 == Screenshots ==
- /assets/screenshot-1.jpg
- /assets/screenshot-2.jpg
+
+1./assets/screenshot-1.jpg
 == Changelog ==
 = 1.0 =
 * First version
@@ -108,4 +108,4 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * You can search year, imdb points and casts
 * You can add all search results
 = 1.2 =
-*Cronjobs bugs have been fixed and search by all year
+*Cronjobs bugs have been fixedsearch by all year
