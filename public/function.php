@@ -2105,7 +2105,7 @@ $api_url_content_array=wp_remote_get( $api_url,$api_args);
 
 $api_url_content=$api_url_content_array['body'];
 
-$user_trailer_last_id=$user_options[0]['trailer']+10;
+$user_trailer_last_id=$user_options[0]['trailer']+50;
 if(!$xml = simplexml_load_string($api_url_content))
 {
 
