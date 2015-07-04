@@ -52,7 +52,7 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 
 1./assets/screenshot-1.jpg
 
-2. /assets/screenshot-2.jpg
+2./assets/screenshot-2.jpg
 == Changelog ==
 = 1.0 =
 * First version
@@ -109,3 +109,5 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * You can categorize searching criterias as year, imdb points and casts
 * You can search year, imdb points and casts
 * You can add all search results
+= 1.2 =
+*Cronjobs bugs have been fixed and search by all year
