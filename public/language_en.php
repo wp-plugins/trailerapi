@@ -72,7 +72,15 @@ $GLOBALS['language']=array(
 'or'=>'Or',
 'nottingmovietrailer'=>'Notting Movie Trailer',
 'page'=>'Pages',
-'postdescription'=>'Post Comment (is Empty Not Added)',
-
+'postdescription'=>'Post Comment (Added)',
+'selectembedtax'=>'Select Embed Taxonomy',
+'embedis'=>' Embed is Taxonomy?',
+'errorembedtax'=>'Embed is Not Category And Taxonomy',
+'imdbtitle'=>'İmdb Point Title',
+'imdbpointtax'=>'İmdb Point Taxonomy',
+'errorimdbtitle'=>'There must be a %%imdbpoint%% in the İMDB Title<br>',
+'specifictitle'=>'Specific Title',
+'specifictaxonomy'=>'Select Specific Taxonomy',
+'currentyear'=>'Trailer List Of Current Year',
 )
 ?>

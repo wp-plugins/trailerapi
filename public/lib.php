@@ -313,6 +313,7 @@ function dateto($zaman,$suan,$ayrinti=2){
 	if($ltm_version=="1.0"){
 	$ltm_options = $wpdb->prefix.'ltm_options';
 	$update_sql="ALTER TABLE $ltm_options  ADD post_description TEXT NOT NULL AFTER title";
+
 	$wpdb->query($update_sql);
 			$wpdb->update( 
 	$ltm_options, 
@@ -321,12 +322,44 @@ function dateto($zaman,$suan,$ayrinti=2){
 	), 
 	array( 'id' => 1 ), 
 	array( 
-		'%d'
+		'%s'
 	), 
 	array( '%d' ) 
 );
 	update_option('LTM_version','1.1');
 	}
-	
+		if($ltm_version=="1.1"){
+	$update_sql="ALTER TABLE $ltm_options ADD  embed_taxonomy VARCHAR(255) NOT NULL AFTER embed_code;";
+	$wpdb->query($update_sql);
+	$update_sql="ALTER TABLE $ltm_options ADD current_year INT NOT NULL DEFAULT '0' AFTER year_title;";
+	$wpdb->query($update_sql);
+	$update_sql="ALTER TABLE $ltm_options ADD imdb_title VARCHAR(255) NOT NULL AFTER title, ADD imdb VARCHAR(255) NOT NULL AFTER imdb_title;";
+	$wpdb->query($update_sql);
+	$update_sql="ALTER TABLE $ltm_options ADD specific_title VARCHAR(255) NOT NULL AFTER gendeauto, ADD specific_taxonomy VARCHAR(255) NOT NULL AFTER specific_title;";
+	$wpdb->query($update_sql);
+				$wpdb->update( 
+	$ltm_options, 
+	array( 
+		'imdb_title' => '%%imdbpoint%% Point',
+	), 
+	array( 'id' => 1 ), 
+	array( 
+		'%s'
+	), 
+	array( '%d' ) 
+);
+$wpdb->update( 
+	$ltm_options, 
+	array( 
+		'specific_title' => 'Trailer',
+	), 
+	array( 'id' => 1 ), 
+	array( 
+		'%s'
+	), 
+	array( '%d' ) 
+);
+	update_option('LTM_version','1.2');
+	}
 	}
 ?>

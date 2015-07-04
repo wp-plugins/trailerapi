@@ -48,7 +48,11 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 == Installation ==
 1. Upload `trailerapi.zip` to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
+== Screenshots ==
 
+1./assets/screenshot-1.jpg
+
+2. /assets/screenshot-2.jpg
 == Changelog ==
 = 1.0 =
 * First version

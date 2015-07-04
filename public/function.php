@@ -2,18 +2,16 @@
 ob_start();
 error_reporting(0);
 /*
-
 assert_options(ASSERT_ACTIVE, 1);
 assert_options(ASSERT_BAIL, 1);
 assert_options(ASSERT_QUIET_EVAL, 1);
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 */
+$ltm_global_version="1.2";
 require_once( ABSPATH . 'wp-includes/pluggable.php' );
-//require_once( ABSPATH . 'wp-includes/functions.php ' );
 require_once( ABSPATH . 'wp-admin/includes/taxonomy.php' );
 require_once('lib.php' );
-//require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 function css_and_js() {
 wp_register_style('css', plugins_url('style.css',__FILE__ ));
 wp_enqueue_style('css');
@@ -28,7 +26,6 @@ function LTM_install() {
     $ltm_options = $wpdb->prefix.'ltm_options';
 	$ltm_trailer = $wpdb->prefix.'ltm_trailer';
 	$charset_collate = $wpdb->get_charset_collate();
-
 	$ltm_options_sql = "CREATE TABLE $ltm_options (
   id int(11) NOT NULL AUTO_INCREMENT,
   trailer int(11) NOT NULL DEFAULT '1',
@@ -72,20 +69,10 @@ function LTM_install() {
 
 
 require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
 	dbDelta( $ltm_options_sql );
 	dbDelta( $ltm_trailer_sql );
 	add_option('LTM_version','1.0');
-
-	
-
-	
-	
-	
-/*	$option_sql='SELECT COUNT(*) FROM '.$ltm_options.' WHERE id=1 ';
-		$wpdb->get_results($option_sql);
-$optCount = $wpdb->num_rows;
-if($optCount==0){ */
+	update_option('LTM_version','1.0');
 $wpdb->delete( $ltm_options, array( 'id' => 1 ), array( '%d' ) );
 $wpdb->insert(  
 	$ltm_options, 
@@ -135,16 +122,7 @@ $wpdb->insert(
 	)
 
 );
-/*
-}else{
 
-}
-*/
-	//add_option( 'LTM_db_install', 'yes' );
-}
-$ltm_current_version=get_option('LTM_version');
-if($ltm_global_version!=$ltm_current_version){
-LTM_update();
 }
 
 if(!empty($_GET['repair'])){
@@ -171,7 +149,7 @@ function LTM_installed() {
 		$ltm_trailer_control_sql="SHOW TABLES LIKE '%".$ltm_trailer."%'";
 	$ltm_trailer_Count_array=$wpdb->get_results($ltm_trailer_control_sql,ARRAY_A);
     if ( empty($ltm_options_Count_array[0]) OR empty($ltm_trailer_Count_array[0])) {
-
+      	delete_option('LTM_version');
         LTM_install();
     }else{
 	if($ltm_options_Count_array[0] == ""){
@@ -183,6 +161,10 @@ function LTM_installed() {
 	}
 }
 add_action( 'plugins_loaded', 'LTM_installed' );
+$ltm_current_version=get_option('LTM_version');
+if($ltm_global_version!=$ltm_current_version){
+LTM_update();
+}
 
 function LMT_Menu(){
 
@@ -208,13 +190,14 @@ $cron_menu=$GLOBALS['language']['cronmenu'];
  if ( isset($_POST['settingsubmit'] ) ) {
  settingssave();
  }
-  if ( isset($_POST['moviessubmit'] ) ) {
-moviesave();
+
+   
+   if ( isset($_POST['reruncron'] ) ) {
+ltm_movie_save();
  }
+   function LMT_search() {
    if ( isset($_POST['moviessearchsubmit'] ) ) {
-moviesearchsave();
- }
- function moviesearchsave(){
+
 	global $wpdb;
 	  	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
 			$ltm_options = $wpdb->prefix . 'ltm_options';
@@ -241,10 +224,12 @@ if(!$xml = simplexml_load_string($api_url_content))
 { 
 }else{
 if(empty($xml->error_status)){
-
+$add_number=0;
+$notadd_number=0;
 	foreach( $xml as $film ) {
 	if(!empty($_POST['movie_add_list'])){
-    if(in_array($film->did,$_POST['movie_add_list'])) {
+    if(in_array((string) $film->did,$_POST['movie_add_list'])) {
+	$add_number++;
 	$user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
 $ltm_trailer_sql= "SELECT movie_id FROM ".$ltm_trailer." WHERE movie_id='".$film->did."'";
 	$wpdb->get_results($ltm_trailer_sql);
@@ -254,15 +239,15 @@ $movie_status=1;
 $wpdb->insert( 
 	$ltm_trailer, 
 	array( 
-		'movie_name' => $film->name,
-		'movie_poster' => $film->poster,
-		'movie_id' => $film->did,
-		'movie_description' =>$film->description,
-		'movie_year' =>$film->year,
-		'movie_producer' =>$film->producer,
-		'movie_imdb' =>$film->imdb,
-		'movie_cast' =>$film->cast,
-		'movie_genre' =>$film->genre,
+		'movie_name' => (string) $film->name,
+		'movie_poster' => (string) $film->poster,
+		'movie_id' => (string) $film->did,
+		'movie_description' =>(string) $film->description,
+		'movie_year' =>(string) $film->year,
+		'movie_producer' =>(string) $film->producer,
+		'movie_imdb' =>(string) $film->imdb,
+		'movie_cast' =>(string) $film->cast,
+		'movie_genre' =>(string) $film->genre,
 		'movie_status' => $movie_status
 	), 
 	array( 
@@ -283,17 +268,20 @@ $wpdb->insert(
 
 $movie_content='<iframe src="//www.dailymotion.com/embed/video/{embed}" width="{width}" height="{height}" frameborder="0" allowfullscreen="allowfullscreen"></iframe>';
 
-$movie_content=str_replace("{embed}",$film->did,$movie_content);
+$movie_content=str_replace("{embed}",(string) $film->did,$movie_content);
 
 $movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
 
 $movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
 
+if(empty($user_options[0]['embed_taxonomy'])){
 $movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
-$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($film->name,$film->cast,$film->year),$user_options[0]['post_description']);
-//$movie_content='[code language="html" ]'.$movie_content.'[/code]';
-
-$movie_name=str_replace("%%title%%",$film->name,$user_options[0]['title']);
+$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array((string) $film->name,(string) $film->cast,(string) $film->year),$user_options[0]['post_description']);
+}else{
+$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%"),array((string) $film->name,(string) $film->cast,(string) $film->year),$user_options[0]['post_description']);
+}
+$movie_name=str_replace("%%title%%",(string) $film->name,$user_options[0]['title']);
+if(empty($user_options[0]['embed_taxonomy'])){
 	$post = array(
      'post_author' => 1,
      'post_content' =>$movie_content,
@@ -303,14 +291,56 @@ $movie_name=str_replace("%%title%%",$film->name,$user_options[0]['title']);
      // 'post_parent' => '',
      'post_type' => "post"
      );
-
+}else{
+	$post = array(
+     'post_author' => 1,
+     'post_content' =>$movie_contents,
+     'post_status' => "future",
+     'post_title' => $movie_name,
+    // 'post_date'	=> date('Y-m-d H:i:s', strtotime(($time*45).' minutes +'.mt_rand(20, 200).' seconds')),
+     // 'post_parent' => '',
+     'post_type' => "post"
+     );
+}
 	      $post_id = wp_insert_post( $post);
-		 
+		  
+		  
+		  	if(!empty($user_options[0]['embed_taxonomy'])){
+	$embed_taxonomy=explode("|||||",$user_options[0]['embed_taxonomy']);
+if(taxonomy_exists($embed_taxonomy[0])){
 
-$image_ext=substr( str_replace("-xlarge","",$film->poster), -4);
+}else{
+add_post_meta( $post_id,$embed_taxonomy[0],$movie_content );
+}
+}else{
+
+}
+	if(!empty($user_options[0]['specific'])){
+	$embed_taxonomy=explode("|||||",$user_options[0]['specific']);
+	$movie_specific=str_replace(array("%%title%%","%%cast%%","%%year%%","%%producertitle%%","%%yeartitle%%","%%actortitle%%","%%gendetitle%%"),array((string) $film->name,(string) $film->cast,(string) $film->year,(string) $film->producer,(string) $film->year,(string) $film->cast,(string) $film->genre),$user_options[0]['specific_title']);
+if(taxonomy_exists($specific[0])){
+if($specific[0]=="category"){
+	if(is_category( $movie_specific)){
+		$movie_specific_cat_id[]=get_cat_ID($movie_specific);
+		wp_set_post_categories( $post_id,$movie_specific_cat_id) ;
+	}else{
+	
+		$movie_specific_cat_id[]=  wp_create_category($movie_specific);
+		wp_set_post_categories( $post_id,$movie_specific_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$movie_specific,$specific[0]);
+ }
+}else{
+add_post_meta( $post_id,$specific[0],$movie_specific );
+}
+}else{
+
+}
+$image_ext=substr( str_replace("-xlarge","",(string) $film->poster), -4);
 $image_ext=str_replace(".","",$image_ext);
-$image_save_name=$film->did.".".$image_ext;
-$file=image_save(str_replace("-xlarge","",$film->poster),$image_save_name);
+$image_save_name=(string) $film->did.".".$image_ext;
+$file=image_save(str_replace("-xlarge","",(string) $film->poster),$image_save_name);
 $wp_filetype = wp_check_filetype( $file, null );
 	$attachment = array(
     'post_mime_type' => $wp_filetype['type'],
@@ -326,15 +356,18 @@ require_once( ABSPATH . 'wp-admin/includes/image.php' );
 	$attach_id = wp_insert_attachment( $attachment, $file);
 	$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
 wp_update_attachment_metadata( $attach_id, $attach_data );
-$movie_tag=str_replace('%%tagtitle%%',$film->name,$user_options[0]['category_title']);
+$movie_tag=str_replace('%%tagtitle%%',(string) $film->name,$user_options[0]['category_title']);
 wp_set_post_tags($post_id,$movie_tag);
 if(!empty($user_options[0]['gender'])){
-if(taxonomy_exists($user_options[0]['gender'])){
+	if(!empty( $film->genre) AND stristr( $film->genre,'n/a')=== false){
+$gender=explode("|||||",$user_options[0]['gender']);
+if(taxonomy_exists($gender[0])){
 if($user_options[0]['gendeauto']==1){
 $movie_genre_array=explode(",",$film->genre);
 for($g=0;$g<count($movie_genre_array);$g++){
+
+if($gender[0]=="category"){
 $movie_genre=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
-if($user_options[0]['gender']=="category"){
 	if(is_category( $movie_genre)){
 		$movie_genre_cat_id[]=get_cat_ID($movie_genre);
 		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
@@ -344,32 +377,64 @@ if($user_options[0]['gender']=="category"){
 		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
 	}
 	}else{
- wp_set_post_terms( $post_id,$movie_genre , $user_options[0]['gender'] );
+	$movie_genre[]=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
+ wp_set_post_terms( $post_id,$movie_genre , $gender[0] );
  }
 }
 }else{
-$movie_genre=str_replace("%%gendetitle%%",$film->genre,$user_options[0]['gende_title']);	
- wp_set_post_terms( $post_id,$movie_genre, $user_options[0]['gender'] );
+//$movie_genre=str_replace("%%gendetitle%%",(string) $film->genre,$user_options[0]['gende_title']);	
+// wp_set_post_terms( $post_id,$movie_genre, $gender[0] );
 }
-
+unset($movie_genre);
 }else{
 if($user_options[0]['gendeauto']==1){
 $movie_genre_array=explode(",",$film->genre);
 for($g=0;$g<count($movie_genre_array);$g++){
-$movie_genre=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
-add_post_meta( $post_id, $user_options[0]['gender'],$movie_genre );
+$movie_genre[]=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
+add_post_meta( $post_id,$gender[0],$movie_genre );
 }
 }else{
-add_post_meta( $post_id, $user_options[0]['gender'],$film->genre );
+//add_post_meta( $post_id, $gender[0],(string) $film->genre );
+}
+
 }
 }
 }else{
 
 }
+
+
+if(!empty($user_options[0]['imdb'])){
+		if(!empty( $film->imdb) AND stristr( $film->imdb,'n/a')=== false){
+$imdb_point=str_replace("%%imdbpoint%%",(string) $film->imdb,$user_options[0]['imdb_title']);
+$imdb=explode("|||||",$user_options[0]['imdb']);
+if(taxonomy_exists($imdb[0])){
+if($imdb[0]=="category"){
+	if(is_category( $imdb_point)){
+		$imdb_point_cat_id[]=get_cat_ID($imdb_point);
+		wp_set_post_categories( $post_id,$imdb_point_cat_id) ;
+	}else{
+	
+		$imdb_point_cat_id[]=  wp_create_category($imdb_point);
+		wp_set_post_categories( $post_id,$imdb_point_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$imdb_point ,$imdb[0] );
+ }
+}else{
+add_post_meta( $post_id,$imdb[0],(string) $film->imdb );
+}
+}
+}else{
+
+}
+
 if(!empty($user_options[0]['year'])){
-$movie_year=str_replace("%%yeartitle%%",$film->year,$user_options[0]['year_title']);
-if(taxonomy_exists($user_options[0]['year'])){
-if($user_options[0]['year']=="category"){
+$movie_year=str_replace("%%yeartitle%%",(string) $film->year,$user_options[0]['year_title']);
+if(!empty( $film->year) AND stristr( $film->year,"n/a")=== false ){
+$year=explode("|||||",$user_options[0]['year']);
+if(taxonomy_exists($year[0])){
+if($year[0]=="category"){
 	if(is_category( $movie_year)){
 		$movie_year_cat_id[]=get_cat_ID($movie_year);
 		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
@@ -379,18 +444,45 @@ if($user_options[0]['year']=="category"){
 		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
 	}
 	}else{
- wp_set_post_terms( $post_id,$movie_year , $user_options[0]['year'] );
+ wp_set_post_terms( $post_id,$movie_year , $year[0] );
  }
 }else{
-add_post_meta( $post_id, $user_options[0]['year'],$film->year);
+add_post_meta( $post_id, $year[0],(string) $film->year);
+}
+}
+}else{
+
+}
+if(!empty($user_options[0]['year'])){
+		if(!empty( $film->year) AND stristr( $film->year,'n/a')=== false){
+$movie_year=str_replace("%%yeartitle%%",(string) $film->year,$user_options[0]['year_title']);
+$year=explode("|||||",$user_options[0]['year']);
+if(taxonomy_exists($year[0])){
+if($year[0]=="category"){
+	if(is_category( $movie_year)){
+		$movie_year_cat_id[]=get_cat_ID($movie_year);
+		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
+	}else{
+	
+		$movie_year_cat_id[]=  wp_create_category($movie_year);
+		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$movie_year ,$year[0] );
+ }
+}else{
+add_post_meta( $post_id,$year[0],(string) $film->year );
+}
 }
 }else{
 
 }
 if(!empty($user_options[0]['producer'])){
-$movie_producer=str_replace("%%producertitle%%",$film->producer,$user_options[0]['producer_title']);
-if(taxonomy_exists($user_options[0]['producer'])){
-if($user_options[0]['producer']=="category"){
+		if(!empty( $film->producer) AND stristr( $film->producer,'n/a')=== false){
+$movie_producer=str_replace("%%producertitle%%",(string) $film->producer,$user_options[0]['producer_title']);
+$producer=explode("|||||",$user_options[0]['producer']);
+if(taxonomy_exists($producer[0])){
+if($producer[0]=="category"){
 	if(is_category( $movie_producer)){
 		$movie_producer_cat_id[]=get_cat_ID($movie_producer);
 		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
@@ -400,21 +492,24 @@ if($user_options[0]['producer']=="category"){
 		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
 	}
 	}else{
- wp_set_post_terms( $post_id,$movie_producer , $user_options[0]['producer'] );
+ wp_set_post_terms( $post_id,$movie_producer , $producer[0] );
  }
 }else{
-add_post_meta( $post_id, $user_options[0]['producer'],$film->producer );
+add_post_meta( $post_id, $producer[0],(string) $film->producer );
+}
 }
 }else{
 
 }
 if(!empty($user_options[0]['actor'])){
-if(taxonomy_exists($user_options[0]['actor'])){
+if(!empty( $film->cast) AND stristr( $film->cast,'n/a')=== false){
+	$actor=explode("|||||",$user_options[0]['actor']);
+if(taxonomy_exists($actor[0])){
 if($user_options[0]['actorauto']==1){
-$movie_genre_array=explode(",",$film->cast);
+$movie_cast_array=explode(",",$film->cast);
 for($g=0;$g<count($movie_cast_array);$g++){
+if($actor[0]=="category"){
 $movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
-if($user_options[0]['actor']=="category"){
 	if(is_category( $movie_cast)){
 		$movie_cast_cat_id[]=get_cat_ID($movie_cast);
 		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
@@ -424,48 +519,61 @@ if($user_options[0]['actor']=="category"){
 		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
 	}
 	}else{
- wp_set_post_terms( $post_id,$movie_cast, $user_options[0]['actor'] );
+	$movie_cast[]=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
+ wp_set_post_terms( $post_id,$movie_cast,$actor[0]);
  }
 }
 }else{
- $movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
- wp_set_post_terms( $post_id,$movie_cast, $user_options[0]['actor'] );
-}
 
+}
+unset($movie_cast);
 }else{
 if($user_options[0]['actorauto']==1){
 $movie_cast_array=explode(",",$film->cast);
 for($g=0;$g<count($movie_cast_array);$g++){
-$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
-add_post_meta( $post_id, $user_options[0]['actor'],$movie_cast );
+$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$actor[0]);
+add_post_meta( $post_id, $actor[0],$movie_cast );
 }
 }else{
-add_post_meta( $post_id, $user_options[0]['actor'],$film->cast);
+
+}
+
 }
 }
 }else{
 
 }
 set_post_thumbnail( $post_id, $attach_id );
-
-	
-}
+		$wpdb->update( 
+	$ltm_trailer, 
+	array( 
+		'movie_status' => 1
+	), 
+	array( 'movie_id' => (string) $film->did ), 
+	array( 
+		'%s'
+	), 
+	array( '%d' ) 
+);
+unset($movie_list);
+    }
 }
 if(!empty($_POST['movie_not_add_list'])){
-if(in_array($film->did,$_POST['movie_not_add_list'])){
+if(in_array((string) $film->did,$_POST['movie_not_add_list'])){
+$notadd_number++;
 	$movie_status=2;
 $wpdb->insert( 
 	$ltm_trailer, 
 	array( 
-		'movie_name' => $film->name,
-		'movie_poster' => $film->poster,
-		'movie_id' => $film->did,
-		'movie_description' =>$film->description,
-		'movie_year' =>$film->year,
-		'movie_producer' =>$film->producer,
-		'movie_imdb' =>$film->imdb,
-		'movie_cast' =>$film->cast,
-		'movie_genre' =>$film->genre,
+		'movie_name' => (string) $film->name,
+		'movie_poster' => (string) $film->poster,
+		'movie_id' => (string) $film->did,
+		'movie_description' =>(string) $film->description,
+		'movie_year' =>(string) $film->year,
+		'movie_producer' =>(string) $film->producer,
+		'movie_imdb' =>(string) $film->imdb,
+		'movie_cast' =>(string) $film->cast,
+		'movie_genre' =>(string) $film->genre,
 		'movie_status' => $movie_status
 	), 
 	array( 
@@ -486,12 +594,8 @@ $wpdb->insert(
 }
 }
 }
-
- }
-   if ( isset($_POST['reruncron'] ) ) {
-ltm_movie_save();
- }
-   function LMT_search() {
+$GLOBALS['searchinfo']=$add_number." Movie Trailer added And ".$notadd_number." Movie Trailer Not added.";
+}
      global $wpdb;
 	 $ltm_options = $wpdb->prefix . 'ltm_options';
 	 	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
@@ -547,6 +651,7 @@ if(!$xml = simplexml_load_string($api_url_content))
 { 
 }else{
 ?>
+
 <form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" id="add_form">
 	<input type="submit"  name="moviessearchsubmit" value="<?php echo $GLOBALS['language']['selectsadd']; ?>" class="alladd">
 <br/><input id="alladd_checked" name="alladd_checked" type="checkbox" onclick="add_checked()" /> <?php echo $GLOBALS['language']['checkalladd']; ?>
@@ -557,14 +662,14 @@ if(!$xml = simplexml_load_string($api_url_content))
 if(empty($xml->error_status)){
 	$movie_list_id=1;
 	foreach( $xml as $film ) {
-	$ltm_trailer_sql= "SELECT movie_id FROM ".$ltm_trailer." WHERE movie_id='".$film->did."'";
+	$ltm_trailer_sql= "SELECT movie_id FROM ".$ltm_trailer." WHERE movie_id='".(string) $film->did."'";
 	$wpdb->get_results($ltm_trailer_sql);
 	$trailertCount = $wpdb->num_rows;
 	if($trailertCount==0){
 	?>
 
-<div class="trailer normal caption"><div class="poster"><img src="<?php echo str_replace("-xlarge","",$film->poster); ?>" alt="<?php echo $film->name;?>" border="0"></div>
-<div class="description"><legend><span class="number"><?php echo $movie_list_id; ?></span><?php echo $film->name;?></legend><p><?php echo $film->description;?><br/>İmdb:<?php echo $film->imdb;?><br/><?php echo $GLOBALS['language']['producer'];?>:<?php echo $film->producer;?><br/><?php echo $GLOBALS['language']['cast']; ?>:<?php echo $film->cast;?></p><h3><input type="checkbox" id="addcheckbox" name="movie_add_list[]" value="<?php echo $film->did;?>"><?php echo $GLOBALS['language']['addmovietrailer']; ?>&nbsp;<input type="checkbox" id="notaddcheckbox" name="movie_not_add_list[]" value="<?php  echo $film->did;?>"> <?php echo $GLOBALS['language']['notaddmovietrailer']; ?></p><p>&nbsp;</h3></div></div>
+<div class="trailer normal caption"><div class="poster"><img src="<?php echo str_replace("-xlarge","",(string) $film->poster); ?>" alt="<?php echo (string) $film->name;?>" border="0"></div>
+<div class="description"><legend><span class="number"><?php echo $movie_list_id; ?></span><?php echo (string) $film->name;?></legend><p><?php echo (string) $film->description;?><br/>İmdb:<?php echo (string) $film->imdb;?><br/><?php echo $GLOBALS['language']['producer'];?>:<?php echo (string) $film->producer;?><br/><?php echo $GLOBALS['language']['cast']; ?>:<?php echo (string) $film->cast;?></p><h3><input type="checkbox" id="addcheckbox" name="movie_add_list[]" value="<?php echo (string) $film->did;?>"><?php echo $GLOBALS['language']['addmovietrailer']; ?>&nbsp;<input type="checkbox" id="notaddcheckbox" name="movie_not_add_list[]" value="<?php  echo (string) $film->did;?>"> <?php echo $GLOBALS['language']['notaddmovietrailer']; ?></p><p>&nbsp;</h3></div></div>
 
 <?php
 $movie_list_id++;
@@ -576,12 +681,18 @@ $movie_list_id++;
 
 }
 if($movie_list_id==1){
-echo '<div>'.$GLOBALS['language']['nottingmovietrailer'].'</div>';
+echo '<br/><div style="color:#FF0000">'.$GLOBALS['language']['nottingmovietrailer'].'</div>';
 }
+?>
+</form>
+<?php
  }else{
  ?>
- <form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" >
 
+ <form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" >
+ <?php if(!empty($GLOBALS['searchinfo'])){ ?>
+<div style="color:#FF0000"><?php echo $GLOBALS['searchinfo']; ?></div>
+<?php } ?>
  <table class="table">
  <tr><td  align="center"> <?php
  echo $GLOBALS['language']['genre'];
@@ -638,9 +749,11 @@ $genre_array=array(
    </table>
  </form>
    <?php
-   }
-   }
+  }
+  }
+ 
   function LMT_cronlist() {
+
 	  $last_time=get_option('LTM_cron_time');
 $current_time=time();
 $difference_time=$current_time-$last_time;
@@ -670,9 +783,11 @@ if($difference_time>$invertal){
 $cron_message=$GLOBALS['language']['runing'];
 	
 }
+
  
 
 	?>
+		<div style="color:#FF0000"><?php echo $GLOBALS['croninfo']; ?></div>
 	<div class="listtitle"><?php echo $GLOBALS['language']['cronmenutitle']; ?></div>
 	
 <div align="center">
@@ -690,8 +805,11 @@ $cron_message=$GLOBALS['language']['runing'];
 <?php }
   }
  function ltm_movie_save() {
- 
+
   global $wpdb;
+ $ltm_terms= $wpdb->prefix . 'terms';
+ $ltm_term_relationships= $wpdb->prefix . 'term_relationships';
+ $ltm_term_taxonomy= $wpdb->prefix . 'term_taxonomy';
 	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
 			$ltm_options = $wpdb->prefix . 'ltm_options';
 			$times=time();
@@ -706,8 +824,8 @@ wp_schedule_event( time(),'hourly', 'ltm_movie_save' );
 	$user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
 	$movie_list_sql="SELECT * FROM ".$ltm_trailer." WHERE movie_status='0'";
 $movie_list = $wpdb->get_results($movie_list_sql, ARRAY_A);
-
-
+if(!empty($movie_list[0]['movie_name'])){
+$GLOBALS['croninfo']=$movie_list[0]['movie_name']." Movie Trailer Added";
 $movie_content='<iframe src="//www.dailymotion.com/embed/video/{embed}" width="{width}" height="{height}" frameborder="0" allowfullscreen="allowfullscreen"></iframe>';
 
 $movie_content=str_replace("{embed}",$movie_list[0]['movie_id'],$movie_content);
@@ -715,13 +833,16 @@ $movie_content=str_replace("{embed}",$movie_list[0]['movie_id'],$movie_content);
 $movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
 
 $movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
-
+if(empty($user_options[0]['embed_taxonomy'])){
 $movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
 $movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
-
+}else{
+$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
+}
 //$movie_content='[code language="html" ]'.$movie_content.'[/code]';
 
 $movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0]['title']);
+if(empty($user_options[0]['embed_taxonomy'])){
 	$post = array(
      'post_author' => 1,
      'post_content' =>$movie_content,
@@ -731,10 +852,27 @@ $movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0
      // 'post_parent' => '',
      'post_type' => "post"
      );
-
+}else{
+	$post = array(
+     'post_author' => 1,
+     'post_content' =>$movie_contents,
+     'post_status' => "future",
+     'post_title' => $movie_name,
+    // 'post_date'	=> date('Y-m-d H:i:s', strtotime(($time*45).' minutes +'.mt_rand(20, 200).' seconds')),
+     // 'post_parent' => '',
+     'post_type' => "post"
+     );
+}
 	      $post_id = wp_insert_post( $post);
-		 
-
+	if(!empty($user_options[0]['embed_taxonomy'])){
+	$embed_taxonomy=explode("|||||",$user_options[0]['embed_taxonomy']);
+if($embed_taxonomy[1]=="taxonomy"){
+if($embed_taxonomy[0]=="category"){
+}else{
+add_post_meta( $post_id,$embed_taxonomy[0],$movie_content );
+}	 
+}
+}
 $image_ext=substr( str_replace("-xlarge","",$movie_list[0]['movie_poster']), -4);
 $image_ext=str_replace(".","",$image_ext);
 $image_save_name=$movie_list[0]['movie_id'].".".$image_ext;
@@ -756,48 +894,95 @@ require_once( ABSPATH . 'wp-admin/includes/image.php' );
 wp_update_attachment_metadata( $attach_id, $attach_data );
 $movie_tag=str_replace('%%tagtitle%%',$movie_list[0]['movie_name'],$user_options[0]['category_title']);
 wp_set_post_tags($post_id,$movie_tag);
-if(!empty($user_options[0]['gender'])){
-if(taxonomy_exists($user_options[0]['gender'])){
-if($user_options[0]['gendeauto']==1){
-$movie_genre_array=explode(",",$movie_list[0]['movie_genre']);
-for($g=0;$g<count($movie_genre_array);$g++){
-$movie_genre=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
-if($user_options[0]['gender']=="category"){
-	if(is_category( $movie_genre)){
-		$movie_genre_cat_id[]=get_cat_ID($movie_genre);
-		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
+
+if(!empty($user_options[0]['specific'])){
+$movie_specific=str_replace(array("%%title%%","%%cast%%","%%year%%","%%producertitle%%","%%yeartitle%%","%%actortitle%%","%%gendetitle%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_year'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_genre']),$user_options[0]['specific_title']);
+$specific=explode("|||||",$user_options[0]['specific']);
+if($specific[1]=="taxonomy"){
+if($specific[0]=="category"){
+	if(is_category( $movie_specific)){
+		$movie_specific_cat_id[]=get_cat_ID($movie_specific);
+		wp_set_post_categories( $post_id,$movie_specific_cat_id) ;
 	}else{
 	
-		$movie_genre_cat_id[]=  wp_create_category($movie_genre);
-		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
+		$movie_specific_cat_id[]=  wp_create_category($movie_specific);
+		wp_set_post_categories( $post_id,$movie_specific_cat_id) ;
 	}
 	}else{
- wp_set_post_terms( $post_id,$movie_genre , $user_options[0]['gender'] );
- }
-}
-}else{
-$movie_genre=str_replace("%%gendetitle%%",$movie_list[0]['movie_genre'],$user_options[0]['gende_title']);	
- wp_set_post_terms( $post_id,$movie_genre, $user_options[0]['gender'] );
-}
 
+	$specificCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(term_id) FROM $ltm_terms WHERE name=%s", $movie_specific));
+	if($specificCount>0){
+	$specificIDs = $wpdb->get_results("SELECT * FROM {$ltm_terms} WHERE name='{$movie_specific}'", ARRAY_A);
+	$specificID=$specificIDs[0]['term_id'];
+
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$specificID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}else{
+		$wpdb->insert(
+	 $ltm_terms, 
+	array( 
+		'name' => $movie_specific,
+		'slug' =>sanitize_title($movie_specific),
+	
+	), 
+	array( 
+		'%s', //Name
+		'%s'  //slug
+		
+	)
+);
+$specificID=$wpdb->insert_id;
+
+ $wpdb->insert( 
+ $ltm_term_taxonomy, 
+	array( 
+	'term_id'=>$specificID,
+		'taxonomy' =>$specific[0],
+		'count'=>1,
+	), 
+	array( 
+	        '%d',  //Term id
+		'%s',  //TERMS
+		'%d'  //TERMS
+	) 
+);
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$specificID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}
+ }
 }else{
-if($user_options[0]['gendeauto']==1){
-$movie_genre_array=explode(",",$movie_list[0]['movie_genre']);
-for($g=0;$g<count($movie_genre_array);$g++){
-$movie_genre=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
-add_post_meta( $post_id, $user_options[0]['gender'],$movie_genre );
+add_post_meta( $post_id,$specific[0],$movie_list[0]['movie_specific'] );
 }
-}else{
-add_post_meta( $post_id, $user_options[0]['gender'],$movie_list[0]['movie_genre'] );
-}
-}
-}else{
 
 }
 if(!empty($user_options[0]['year'])){
+		if(!empty($movie_list[0]['movie_year']) AND stristr($movie_list[0]['movie_year'],'n/a')=== false){
 $movie_year=str_replace("%%yeartitle%%",$movie_list[0]['movie_year'],$user_options[0]['year_title']);
-if(taxonomy_exists($user_options[0]['year'])){
-if($user_options[0]['year']=="category"){
+$year=explode("|||||",$user_options[0]['year']);
+if($year[1]=="taxonomy"){
+if($year[0]=="category"){
 	if(is_category( $movie_year)){
 		$movie_year_cat_id[]=get_cat_ID($movie_year);
 		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
@@ -807,42 +992,260 @@ if($user_options[0]['year']=="category"){
 		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
 	}
 	}else{
- wp_set_post_terms( $post_id,$movie_year , $user_options[0]['year'] );
+
+	$yearCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(term_id) FROM $ltm_terms WHERE name=%s", $movie_year));
+	if($yearCount>0){
+	$yearIDs = $wpdb->get_results("SELECT * FROM {$ltm_terms} WHERE name='{$movie_year}'", ARRAY_A);
+	$yearID=$yearIDs[0]['term_id'];
+
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$yearID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}else{
+		$wpdb->insert(
+	 $ltm_terms, 
+	array( 
+		'name' => $movie_year,
+		'slug' =>sanitize_title($movie_year),
+	
+	), 
+	array( 
+		'%s', //Name
+		'%s'  //slug
+		
+	)
+);
+$yearID=$wpdb->insert_id;
+
+ $wpdb->insert( 
+ $ltm_term_taxonomy, 
+	array( 
+	'term_id'=>$yearID,
+		'taxonomy' =>$year[0],
+		'count'=>1,
+	), 
+	array( 
+	        '%d',  //Term id
+		'%s',  //TERMS
+		'%d'  //TERMS
+	) 
+);
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$yearID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}
  }
 }else{
-add_post_meta( $post_id, $user_options[0]['year'],$movie_list[0]['movie_year'] );
+add_post_meta( $post_id,$year[0],$movie_list[0]['movie_year'] );
 }
-}else{
-
 }
-if(!empty($user_options[0]['producer'])){
-$movie_producer=str_replace("%%producertitle%%",$movie_list[0]['movie_producer'],$user_options[0]['producer_title']);
-if(taxonomy_exists($user_options[0]['producer'])){
-if($user_options[0]['producer']=="category"){
-	if(is_category( $movie_producer)){
-		$movie_producer_cat_id[]=get_cat_ID($movie_producer);
-		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
+}
+if(!empty($user_options[0]['imdb'])){
+		if(!empty($movie_list[0]['movie_imdb']) AND stristr($movie_list[0]['movie_imdb'],'n/a')=== false){
+$movie_imdb=str_replace("%%imdbpoint%%",$movie_list[0]['movie_imdb'],$user_options[0]['imdb_title']);
+$imdb=explode("|||||",$user_options[0]['imdb']);
+if($imdb[1]=="taxonomy"){
+if($imdb[0]=="category"){
+	if(is_category( $movie_imdb)){
+		$movie_imdb_cat_id[]=get_cat_ID($movie_imdb);
+		wp_set_post_categories( $post_id,$movie_imdb_cat_id) ;
 	}else{
 	
-		$movie_producer_cat_id[]=  wp_create_category($movie_producer);
-		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
+		$movie_imdb_cat_id[]=  wp_create_category($movie_imdb);
+		wp_set_post_categories( $post_id,$movie_imdb_cat_id) ;
 	}
 	}else{
- wp_set_post_terms( $post_id,$movie_producer , $user_options[0]['producer'] );
+
+	$imdbCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(term_id) FROM $ltm_terms WHERE name=%s", $movie_imdb));
+	if($imdbCount>0){
+	$imdbIDs = $wpdb->get_results("SELECT * FROM {$ltm_terms} WHERE name='{$movie_imdb}'", ARRAY_A);
+	$imdbID=$imdbIDs[0]['term_id'];
+
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$imdbID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}else{
+		$wpdb->insert(
+	 $ltm_terms, 
+	array( 
+		'name' => $movie_imdb,
+		'slug' =>sanitize_title($movie_imdb),
+	
+	), 
+	array( 
+		'%s', //Name
+		'%s'  //slug
+		
+	)
+);
+$imdbID=$wpdb->insert_id;
+
+ $wpdb->insert( 
+ $ltm_term_taxonomy, 
+	array( 
+	'term_id'=>$imdbID,
+		'taxonomy' =>$imdb[0],
+		'count'=>1,
+	), 
+	array( 
+	        '%d',  //Term id
+		'%s',  //TERMS
+		'%d'  //TERMS
+	) 
+);
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$imdbID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}
  }
 }else{
-add_post_meta( $post_id, $user_options[0]['producer'],$movie_list[0]['movie_producer'] );
+add_post_meta( $post_id,$imdb[0],$movie_list[0]['movie_imdb'] );
 }
-}else{
+}
+}
 
+//Genre
+if(!empty($user_options[0]['gender'])){
+		if(!empty($movie_list[0]['movie_genre']) AND stristr($movie_list[0]['movie_genre'],'n/a')=== false){
+$genre=explode("|||||",$user_options[0]['gender']);
+if($user_options[0]['gendeauto']==1){
+$movie_genre_array=explode(',',$movie_list[0]['movie_genre']);
+foreach($movie_genre_array as $movie_genres){
+$movie_genre=str_replace("%%gendetitle%%",$movie_genres,$user_options[0]['gende_title']);
+if($genre[1]=="taxonomy"){
+if($genre[0]=="category"){
+	if(is_category( $movie_genre)){
+		$movie_genre_cat_id[]=get_cat_ID($movie_genre);
+		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
+	}else{
+	
+		$movie_genre_cat_id[]=  wp_create_category($movie_genre);
+		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
+	}
+	}else{
+
+	$genreCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(term_id) FROM $ltm_terms WHERE name=%s", $movie_genre));
+	if($genreCount>0){
+	$genreIDs = $wpdb->get_results("SELECT * FROM {$ltm_terms} WHERE name='{$movie_genre}'", ARRAY_A);
+	$genreID=$imdbIDs[0]['term_id'];
+
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$genreID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}else{
+		$wpdb->insert(
+	 $ltm_terms, 
+	array( 
+		'name' => $movie_genre,
+		'slug' =>sanitize_title($movie_genre),
+	
+	), 
+	array( 
+		'%s', //Name
+		'%s'  //slug
+		
+	)
+);
+$genreID=$wpdb->insert_id;
+
+ $wpdb->insert( 
+ $ltm_term_taxonomy, 
+	array( 
+	'term_id'=>$genreID,
+		'taxonomy' =>$genre[0],
+		'count'=>1,
+	), 
+	array( 
+	        '%d',  //Term id
+		'%s',  //TERMS
+		'%d'  //TERMS
+	) 
+);
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$genreID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}
+ }
+}else{
+add_post_meta( $post_id,$movie_genre,$movie_list[0]['movie_genre'] );
 }
+}
+}
+}
+}
+
+//genre
+
+//cast
 if(!empty($user_options[0]['actor'])){
-if(taxonomy_exists($user_options[0]['actor'])){
+		if(!empty($movie_list[0]['movie_cast']) AND stristr($movie_list[0]['movie_cast'],'n/a')=== false){
+$cast=explode("|||||",$user_options[0]['actor']);
 if($user_options[0]['actorauto']==1){
-$movie_genre_array=explode(",",$movie_list[0]['movie_cast']);
-for($g=0;$g<count($movie_cast_array);$g++){
-$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
-if($user_options[0]['actor']=="category"){
+$movie_cast_array=explode(',',$movie_list[0]['movie_cast']);
+foreach($movie_cast_array as $movie_casts){
+$movie_cast=str_replace("%%actortitle%%",$movie_casts,$user_options[0]['actor_title']);
+if($cast[1]=="taxonomy"){
+if($cast[0]=="category"){
 	if(is_category( $movie_cast)){
 		$movie_cast_cat_id[]=get_cat_ID($movie_cast);
 		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
@@ -852,30 +1255,79 @@ if($user_options[0]['actor']=="category"){
 		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
 	}
 	}else{
- wp_set_post_terms( $post_id,$movie_cast, $user_options[0]['actor'] );
+
+	$castCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(term_id) FROM $ltm_terms WHERE name=%s", $movie_cast));
+	if($castCount>0){
+	$castIDs = $wpdb->get_results("SELECT * FROM {$ltm_terms} WHERE name='{$movie_cast}'", ARRAY_A);
+	$castID=$imdbIDs[0]['term_id'];
+
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$castID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}else{
+		$wpdb->insert(
+	 $ltm_terms, 
+	array( 
+		'name' => $movie_cast,
+		'slug' =>sanitize_title($movie_cast),
+	
+	), 
+	array( 
+		'%s', //Name
+		'%s'  //slug
+		
+	)
+);
+$castID=$wpdb->insert_id;
+
+ $wpdb->insert( 
+ $ltm_term_taxonomy, 
+	array( 
+	'term_id'=>$castID,
+		'taxonomy' =>$cast[0],
+		'count'=>1,
+	), 
+	array( 
+	        '%d',  //Term id
+		'%s',  //TERMS
+		'%d'  //TERMS
+	) 
+);
+	$wpdb->insert( 
+	 $ltm_term_relationships, 
+	array( 
+		'object_id' => $post_id,
+		'term_taxonomy_id' =>$castID,
+	
+	), 
+	array( 
+		'%d', //OBJECT
+		'%d'  //TERMS
+		
+	) 
+);
+	}
  }
-}
 }else{
- $movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
- wp_set_post_terms( $post_id,$movie_cast, $user_options[0]['actor'] );
+add_post_meta( $post_id,$movie_cast,$movie_list[0]['movie_cast'] );
+}
+}
+}
+}
 }
 
-}else{
-if($user_options[0]['actorauto']==1){
-$movie_cast_array=explode(",",$movie_list[0]['movie_cast']);
-for($g=0;$g<count($movie_cast_array);$g++){
-$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
-add_post_meta( $post_id, $user_options[0]['actor'],$movie_cast );
-}
-}else{
-add_post_meta( $post_id, $user_options[0]['actor'],$movie_list[0]['movie_cast'] );
-}
-}
-}else{
-
-}
+//cast
 set_post_thumbnail( $post_id, $attach_id );
-	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
 		$wpdb->update( 
 	$ltm_trailer, 
 	array( 
@@ -888,216 +1340,12 @@ set_post_thumbnail( $post_id, $attach_id );
 	array( '%d' ) 
 );
 unset($movie_list);
-
-}
-	
- function moviesave(){
-	global $wpdb;
-	  	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
-			$ltm_options = $wpdb->prefix . 'ltm_options';
-	if(!empty($_POST['movie_add_list'])) {
-    foreach($_POST['movie_add_list'] as $addcheck) {
-	$user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
-	$movie_list_sql="SELECT * FROM ".$ltm_trailer." WHERE id =".$addcheck;
-$movie_list = $wpdb->get_results($movie_list_sql, ARRAY_A);
-
-
-$movie_content='<iframe src="//www.dailymotion.com/embed/video/{embed}" width="{width}" height="{height}" frameborder="0" allowfullscreen="allowfullscreen"></iframe>';
-
-$movie_content=str_replace("{embed}",$movie_list[0]['movie_id'],$movie_content);
-
-$movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
-
-$movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
-
-$movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
-$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
-//$movie_content='[code language="html" ]'.$movie_content.'[/code]';
-
-$movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0]['title']);
-	$post = array(
-     'post_author' => 1,
-     'post_content' =>$movie_content,
-     'post_status' => "future",
-     'post_title' => $movie_name,
-    // 'post_date'	=> date('Y-m-d H:i:s', strtotime(($time*45).' minutes +'.mt_rand(20, 200).' seconds')),
-     // 'post_parent' => '',
-     'post_type' => "post"
-     );
-
-	      $post_id = wp_insert_post( $post);
-		 
-
-$image_ext=substr( str_replace("-xlarge","",$movie_list[0]['movie_poster']), -4);
-$image_ext=str_replace(".","",$image_ext);
-$image_save_name=$movie_list[0]['movie_id'].".".$image_ext;
-$file=image_save(str_replace("-xlarge","",$movie_list[0]['movie_poster']),$image_save_name);
-$wp_filetype = wp_check_filetype( $file, null );
-	$attachment = array(
-    'post_mime_type' => $wp_filetype['type'],
-    'post_title' => preg_replace('/.[^.]+$/', '', basename( $file) ),
-    //'post_content' => '',
-    //'post_author' => 1,
-    //'post_status' => 'inherit',
-    'post_type' => 'attachment',
-    'post_parent' =>  $post_id,
-    'guid' => $wp_upload_dir['url'] . '/' . basename( $file)
-	);
-require_once( ABSPATH . 'wp-admin/includes/image.php' );
-	$attach_id = wp_insert_attachment( $attachment, $file);
-	$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
-wp_update_attachment_metadata( $attach_id, $attach_data );
-$movie_tag=str_replace('%%tagtitle%%',$movie_list[0]['movie_name'],$user_options[0]['category_title']);
-wp_set_post_tags($post_id,$movie_tag);
-if(!empty($user_options[0]['gender'])){
-if(taxonomy_exists($user_options[0]['gender'])){
-if($user_options[0]['gendeauto']==1){
-$movie_genre_array=explode(",",$movie_list[0]['movie_genre']);
-for($g=0;$g<count($movie_genre_array);$g++){
-$movie_genre=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
-if($user_options[0]['gender']=="category"){
-	if(is_category( $movie_genre)){
-		$movie_genre_cat_id[]=get_cat_ID($movie_genre);
-		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
-	}else{
-	
-		$movie_genre_cat_id[]=  wp_create_category($movie_genre);
-		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
-	}
-	}else{
- wp_set_post_terms( $post_id,$movie_genre , $user_options[0]['gender'] );
- }
-}
 }else{
-$movie_genre=str_replace("%%gendetitle%%",$movie_list[0]['movie_genre'],$user_options[0]['gende_title']);	
- wp_set_post_terms( $post_id,$movie_genre, $user_options[0]['gender'] );
+$GLOBALS['croninfo']="Not Added Trailer";
 }
-
-}else{
-if($user_options[0]['gendeauto']==1){
-$movie_genre_array=explode(",",$movie_list[0]['movie_genre']);
-for($g=0;$g<count($movie_genre_array);$g++){
-$movie_genre=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
-add_post_meta( $post_id, $user_options[0]['gender'],$movie_genre );
-}
-}else{
-add_post_meta( $post_id, $user_options[0]['gender'],$movie_list[0]['movie_genre'] );
-}
-}
-}else{
-
-}
-if(!empty($user_options[0]['year'])){
-$movie_year=str_replace("%%yeartitle%%",$movie_list[0]['movie_year'],$user_options[0]['year_title']);
-if(taxonomy_exists($user_options[0]['year'])){
-if($user_options[0]['year']=="category"){
-	if(is_category( $movie_year)){
-		$movie_year_cat_id[]=get_cat_ID($movie_year);
-		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
-	}else{
-	
-		$movie_year_cat_id[]=  wp_create_category($movie_year);
-		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
-	}
-	}else{
- wp_set_post_terms( $post_id,$movie_year , $user_options[0]['year'] );
- }
-}else{
-add_post_meta( $post_id, $user_options[0]['year'],$movie_list[0]['movie_year'] );
-}
-}else{
-
-}
-if(!empty($user_options[0]['producer'])){
-$movie_producer=str_replace("%%producertitle%%",$movie_list[0]['movie_producer'],$user_options[0]['producer_title']);
-if(taxonomy_exists($user_options[0]['producer'])){
-if($user_options[0]['producer']=="category"){
-	if(is_category( $movie_producer)){
-		$movie_producer_cat_id[]=get_cat_ID($movie_producer);
-		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
-	}else{
-	
-		$movie_producer_cat_id[]=  wp_create_category($movie_producer);
-		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
-	}
-	}else{
- wp_set_post_terms( $post_id,$movie_producer , $user_options[0]['producer'] );
- }
-}else{
-add_post_meta( $post_id, $user_options[0]['producer'],$movie_list[0]['movie_producer'] );
-}
-}else{
-
-}
-if(!empty($user_options[0]['actor'])){
-if(taxonomy_exists($user_options[0]['actor'])){
-if($user_options[0]['actorauto']==1){
-$movie_genre_array=explode(",",$movie_list[0]['movie_cast']);
-for($g=0;$g<count($movie_cast_array);$g++){
-$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
-if($user_options[0]['actor']=="category"){
-	if(is_category( $movie_cast)){
-		$movie_cast_cat_id[]=get_cat_ID($movie_cast);
-		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
-	}else{
-	
-		$movie_cast_cat_id[]=  wp_create_category($movie_cast);
-		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
-	}
-	}else{
- wp_set_post_terms( $post_id,$movie_cast, $user_options[0]['actor'] );
- }
-}
-}else{
- $movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
- wp_set_post_terms( $post_id,$movie_cast, $user_options[0]['actor'] );
-}
-
-}else{
-if($user_options[0]['actorauto']==1){
-$movie_cast_array=explode(",",$movie_list[0]['movie_cast']);
-for($g=0;$g<count($movie_cast_array);$g++){
-$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
-add_post_meta( $post_id, $user_options[0]['actor'],$movie_cast );
-}
-}else{
-add_post_meta( $post_id, $user_options[0]['actor'],$movie_list[0]['movie_cast'] );
-}
-}
-}else{
-
-}
-set_post_thumbnail( $post_id, $attach_id );
-		$wpdb->update( 
-	$ltm_trailer, 
-	array( 
-		'movie_status' => 1
-	), 
-	array( 'id' => $addcheck ), 
-	array( 
-		'%d'
-	), 
-	array( '%d' ) 
-);
-unset($movie_list);
     }
-}
-	if(!empty($_POST['movie_not_add_list'])) {
-    foreach($_POST['movie_not_add_list'] as $notaddcheck) {
-      $wpdb->update( 
-	$ltm_trailer, 
-	array( 
-		'movie_status' => 2
-	), 
-	array( 'id' => $notaddcheck ), 
-	array( 
-		'%d'
-	), 
-	array( '%d' ) 
-);
-    }
-}
- }
+	
+
 function settingssave() {
 	$error="";
 	 	global $wpdb;
@@ -1113,19 +1361,33 @@ $yes=1;
  $yes=0;
 }
 
-if(isset($_POST['actoryes'])) { 
+
+if(!empty($_POST['actor'])){
 $actoryes=1;
 } else {
  $actoryes=0;
 }
-if(isset($_POST['gendeyes'])) { 
+if(!empty($_POST['current_year'])){
+$current_year=1;
+} else {
+ $current_year=0;
+}
+if(!empty( $_POST['gender'])){
 $gendeyes=1;
 } else {
  $gendeyes=0;
 }
-
 if(stristr($_POST['category_title'],'%%tagtitle%%')===false){
 	$error.= $GLOBALS['language']['errortagtitle'];
+}
+if(stristr($_POST['imdbtitle'],'%%imdbpoint%%')===false){
+	$error.= $GLOBALS['language']['errorimdbtitle'];
+}
+if(stristr($_POST['embed_taxonomy'],"category")===true){
+	$error.= $GLOBALS['language']['errorembedtax'];
+}
+if(stristr($_POST['embed_taxonomy'],"taxonomy")===true){
+	$error.= $GLOBALS['language']['errorembedtax'];
 }
 if(stristr($_POST['title'],'%%title%%')===false){
 	$error.= $GLOBALS['language']['errortitle'];
@@ -1181,7 +1443,13 @@ wp_clear_scheduled_hook( 'ltm_movie_save');
 		'gende_title' => $_POST['gende_title'],
 		'auto' => $yes,
 		'actorauto'=>$actoryes,
-		'gendeauto'=>$gendeyes	
+		'gendeauto'=>$gendeyes,
+		'embed_taxonomy'=>$_POST['embed_taxonomy'],
+		'imdb_title'=>$_POST['imdbtitle'],
+		'imdb'=>$_POST['imdb'],
+		'specific_title'=>$_POST['specific_title'],
+		'specific_taxonomy'=>$_POST['specific'],
+		'current_year'=>$current_year
 	), 
 	array( 'id' => 1 ), 
 	array( 
@@ -1202,7 +1470,13 @@ wp_clear_scheduled_hook( 'ltm_movie_save');
 		'%s',	//gende_title
 		'%d',	//auto
 		'%d',	//actorauto
-		'%d'	//gendeauto
+		'%d',	//gendeauto
+		'%s',	//embed_taxonomy
+		'%s',	//imdb_title
+		'%s',	//imdb
+		'%s',	//specific_title
+		'%s',	//specific
+		'%d'	//Current Year
 	), 
 	array( '%d' ) 
 );
@@ -1264,13 +1538,10 @@ if(empty($xml->error_status)){
 
 
 	$ltm_post=$wpdb->prefix.'posts';
-	$ltm_post_sql= "SELECT * FROM ".$ltm_post." WHERE post_title LIKE '%".addslashes($film->name)."%'";
-	$wpdb->get_results($ltm_post_sql);
-	$postCount = $wpdb->num_rows;
+	$postCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(ID) FROM $ltm_post WHERE  post_title LIKE %s ", '%'.addslashes((string) $film->name).'%'));
 	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
-$ltm_trailer_sql= "SELECT movie_id FROM ".$ltm_trailer." WHERE movie_id='".$film->did."'";
-	$wpdb->get_results($ltm_trailer_sql);
-	$trailertCount = $wpdb->num_rows;
+
+	$trailertCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $ltm_trailer WHERE movie_id = %d", (string) $film->did));
 if($postCount>0){
 $movie_status=4;
 }else{
@@ -1280,15 +1551,15 @@ $movie_status=0;
 $wpdb->insert( 
 	$ltm_trailer, 
 	array( 
-		'movie_name' => $film->name,
-		'movie_poster' => $film->poster,
-		'movie_id' => $film->did,
-		'movie_description' =>$film->description,
-		'movie_year' =>$film->year,
-		'movie_producer' =>$film->producer,
-		'movie_imdb' =>$film->imdb,
-		'movie_cast' =>$film->cast,
-		'movie_genre' =>$film->genre,
+		'movie_name' => (string) $film->name,
+		'movie_poster' => (string) $film->poster,
+		'movie_id' => (string) $film->did,
+		'movie_description' =>(string) $film->description,
+		'movie_year' =>(string) $film->year,
+		'movie_producer' =>(string) $film->producer,
+		'movie_imdb' =>(string) $film->imdb,
+		'movie_cast' =>(string) $film->cast,
+		'movie_genre' =>(string) $film->genre,
 		'movie_status' => $movie_status
 	), 
 	array( 
@@ -1358,6 +1629,19 @@ $wpdb->update(
           <input type="checkbox" id="yes" value="1" name="yes" <?php if($user_options[0]['auto']==1){ ?>  checked="checked" <?php } ?>><label class="light" for="development"><?php echo $GLOBALS['language']['yes']; ?></label>
 		  </td><td>   <legend><span class="number">3</span><?php echo $GLOBALS['language']['tembedcode']; ?>:</legend>
      <textarea name="embed" cols="50" rows="4" ><?php echo $user_options[0]['embed_code']; ?></textarea>
+	 <?php echo $GLOBALS['language']['embedis']; ?>
+	  <select id="embed_taxonomy" name="embed_taxonomy">
+	    <option value="" <?php if(empty($user_options[0]['embed_taxonomy'])){?> selected="selected" <?php } ?> > <?php echo $GLOBALS['language']['selectembedtax']; ?></option>
+<?php
+
+$meta_keys = $wpdb->get_results("SELECT DISTINCT (meta_key) as meta_key FROM $wpdb->postmeta ", ARRAY_A );
+foreach($meta_keys as $meta_key){
+?>
+  <option value="<?php echo $meta_key['meta_key']."|||||meta_key";?>" <?php if($user_options[0]['embed_taxonomy']==$meta_key['meta_key']."|||||meta_key"){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
+<?php 
+}
+?>
+</select>
 	  </td></tr><tr><td>  <legend><span class="number">4</span><?php echo $GLOBALS['language']['posttitle']; ?>:</legend>
      <input name="title" type="text" value="<?php echo $user_options[0]['title']; ?>" />
 	 </td><td><legend><span class="number">5</span><?php echo $GLOBALS['language']['postdescription']; ?>:</legend>
@@ -1376,37 +1660,34 @@ $wpdb->update(
 <?php
 $taxonomies = get_taxonomies(); 
 foreach ( $taxonomies as $taxonomy ) { ?>
-    <option value="<?php echo $taxonomy?>"  <?php if($user_options[0]['actor']==$taxonomy){ ?> selected="selected" <?php } ?>> <?php echo $taxonomy; ?></option>
+    <option value="<?php echo $taxonomy."|||||taxonomy";?>"  <?php if($user_options[0]['actor']==$taxonomy."|||||taxonomy"){ ?> selected="selected" <?php } ?>> <?php echo $taxonomy; ?></option>
 
 	<?php
 }
 $meta_keys = $wpdb->get_results("SELECT DISTINCT (meta_key) as meta_key FROM $wpdb->postmeta ", ARRAY_A );
 foreach($meta_keys as $meta_key){
 ?>
-  <option value="<?php echo $meta_key['meta_key'];?>" <?php if($user_options[0]['actor']==$meta_key['meta_key']){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
+  <option value="<?php echo $meta_key['meta_key']."|||||meta_key";?>" <?php if($user_options[0]['actor']==$meta_key['meta_key']."|||||meta_key"){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
 <?php 
 }
 ?>
 </select>
   </td><td> <legend><span class="number">9</span><?php echo $GLOBALS['language']['actortitle']; ?>:</legend>
      <input name="actor_title" type="text" value="<?php echo $user_options[0]['actor_title']; ?>" />
-	   <legend><?php echo $GLOBALS['language']['automaticactortax']; ?></legend>
-      
-          <input type="checkbox" id="yes" value="1" name="actoryes" <?php if($user_options[0]['actorauto']==1){ ?>  checked="checked" <?php } ?>><label class="light" for="development"><?php echo $GLOBALS['language']['yes']; ?></label>
   </td></tr><tr><td> <legend><span class="number">10</span><?php echo $GLOBALS['language']['selectyeartax']; ?> :</legend>
     <select id="year" name="year">
 	    <option value="" > <?php echo $GLOBALS['language']['selectyeartax']; ?></option>
 <?php
 $taxonomies = get_taxonomies(); 
 foreach ( $taxonomies as $taxonomy ) { ?>
-    <option value="<?php echo $taxonomy;?>" <?php if($user_options[0]['year']==$taxonomy){ ?> selected="selected" <?php } ?> > <?php echo $taxonomy; ?></option>
+    <option value="<?php echo $taxonomy."|||||taxonomy";?>" <?php if($user_options[0]['year']==$taxonomy."|||||taxonomy"){ ?> selected="selected" <?php } ?> > <?php echo $taxonomy; ?></option>
 
 	<?php
 }
 $meta_keys = $wpdb->get_results("SELECT DISTINCT (meta_key) as meta_key FROM $wpdb->postmeta ", ARRAY_A );
 foreach($meta_keys as $meta_key){
 ?>
-  <option value="<?php echo $meta_key['meta_key'];?>" <?php if($user_options[0]['year']==$meta_key['meta_key']){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
+  <option value="<?php echo $meta_key['meta_key']."|||||meta_key";?>" <?php if($user_options[0]['year']==$meta_key['meta_key']."|||||meta_key"){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
 <?php 
 }
 ?>
@@ -1420,21 +1701,19 @@ foreach($meta_keys as $meta_key){
 <?php
 $taxonomies = get_taxonomies(); 
 foreach ( $taxonomies as $taxonomy ) { ?>
-    <option value="<?php echo $taxonomy?>" <?php if($user_options[0]['gender']==$taxonomy){ ?> selected="selected" <?php } ?> > <?php echo $taxonomy; ?></option>
+    <option value="<?php echo $taxonomy."|||||taxonomy";?>" <?php if($user_options[0]['gender']==$taxonomy."|||||taxonomy"){ ?> selected="selected" <?php } ?> > <?php echo $taxonomy; ?></option>
 
 	<?php
 }
 $meta_keys = $wpdb->get_results("SELECT DISTINCT (meta_key) as meta_key FROM $wpdb->postmeta ", ARRAY_A );
 foreach($meta_keys as $meta_key){
 ?>
-  <option value="<?php echo $meta_key['meta_key'];?>" <?php if($user_options[0]['gender']==$meta_key['meta_key']){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
+  <option value="<?php echo $meta_key['meta_key']."|||||meta_key";?>" <?php if($user_options[0]['gender']==$meta_key['meta_key']."|||||meta_key"){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
 <?php 
 }
 ?>
 </select>
-  <legend><?php echo $GLOBALS['language']['automaticgendetax']; ?></legend>
-      
-          <input type="checkbox" id="yes" value="1" name="gendeyes" <?php if($user_options[0]['gendeauto']==1){ ?>  checked="checked" <?php } ?>><label class="light" for="development"><?php echo $GLOBALS['language']['yes']; ?></label>
+
    </td></tr><tr><td><legend><span class="number">13</span><?php echo $GLOBALS['language']['gendetitle']; ?>:</legend>
      <input name="gende_title" type="text" value="<?php echo $user_options[0]['gende_title']; ?>" /></td>
 	<td> <legend><span class="number">14</span><?php echo $GLOBALS['language']['producertitle']; ?>:</legend>
@@ -1444,19 +1723,58 @@ foreach($meta_keys as $meta_key){
 	    <option value="" > <?php echo $GLOBALS['language']['selectproducertax']; ?></option>
 <?php
 $taxonomies = get_taxonomies(); 
+print_r($taxonomies);
 foreach ( $taxonomies as $taxonomy ) { ?>
-    <option value="<?php echo $taxonomy;?>" <?php if($user_options[0]['producer']==$taxonomy){ ?> selected="selected" <?php } ?> > <?php echo $taxonomy; ?></option>
+    <option value="<?php echo $taxonomy."|||||taxonomy";?>" <?php if($user_options[0]['producer']==$taxonomy."|||||taxonomy"){ ?> selected="selected" <?php } ?> > <?php echo $taxonomy; ?></option>
 
 	<?php
 }
 $meta_keys = $wpdb->get_results("SELECT DISTINCT (meta_key) as meta_key FROM $wpdb->postmeta ", ARRAY_A );
 foreach($meta_keys as $meta_key){
 ?>
-  <option value="<?php echo $meta_key['meta_key'];?>" <?php if($user_options[0]['producer']==$meta_key['meta_key']){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
+  <option value="<?php echo $meta_key['meta_key']."|||||meta_key";?>" <?php if($user_options[0]['producer']==$meta_key['meta_key']."|||||meta_key"){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
 <?php 
 }
 ?>
-</select></td><tr><td colspan="3" align="center">
+</select></td></tr><tr><td><legend><span class="number">16</span><?php echo $GLOBALS['language']['imdbtitle']; ?>:</legend>
+     <input name="imdbtitle" type="text" value="<?php echo $user_options[0]['imdb_title']; ?>" /></td>
+	<td> <legend><span class="number">17</span><?php echo $GLOBALS['language']['imdbpointtax']; ?> :</legend>
+    <select id="imdb" name="imdb">
+	    <option value="" > <?php echo $GLOBALS['language']['imdbpointtax']; ?></option>
+<?php
+$taxonomies = get_taxonomies(); 
+foreach ( $taxonomies as $taxonomy ) { ?>
+    <option value="<?php echo $taxonomy."|||||taxonomy";?>" <?php if($user_options[0]['imdb']==$taxonomy."|||||taxonomy"){ ?> selected="selected" <?php } ?> > <?php echo $taxonomy; ?></option>
+
+	<?php
+}
+$meta_keys = $wpdb->get_results("SELECT DISTINCT (meta_key) as meta_key FROM $wpdb->postmeta ", ARRAY_A );
+foreach($meta_keys as $meta_key){
+?>
+  <option value="<?php echo $meta_key['meta_key']."|||||meta_key";?>" <?php if($user_options[0]['imdb']==$meta_key['meta_key']."|||||meta_key"){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
+<?php 
+}
+?>
+</select>
+  </td><td><legend><span class="number">18</span><?php echo $GLOBALS['language']['specifictitle']; ?>:</legend>
+     <input name="specific_title" type="text" value="<?php echo $user_options[0]['specific_title']; ?>" /><legend><?php echo $GLOBALS['language']['specifictaxonomy']; ?> :</legend>
+    <select id="specific" name="specific">
+	    <option value="" > <?php echo $GLOBALS['language']['specifictaxonomy']; ?></option>
+<?php
+$taxonomies = get_taxonomies(); 
+foreach ( $taxonomies as $taxonomy ) { ?>
+    <option value="<?php echo $taxonomy."|||||taxonomy";?>" <?php if($user_options[0]['specific']==$taxonomy."|||||taxonomy"){ ?> selected="selected" <?php } ?> > <?php echo $taxonomy; ?></option>
+
+	<?php
+}
+$meta_keys = $wpdb->get_results("SELECT DISTINCT (meta_key) as meta_key FROM $wpdb->postmeta ", ARRAY_A );
+foreach($meta_keys as $meta_key){
+?>
+  <option value="<?php echo $meta_key['meta_key']."|||||meta_key";?>" <?php if($user_options[0]['specific_taxonomy']==$meta_key['meta_key']."|||||meta_key"){ ?> selected="selected" <?php } ?> > <?php echo $meta_key['meta_key']; ?></option>
+<?php 
+}
+?>
+</select></td></tr><tr><td><legend><span class="number">19</span><?php echo $GLOBALS['language']['currentyear']; ?>:</legend><br/> <input type="checkbox" id="current_year" value="1"  name="current_year" <?php if($user_options[0]['current_year']==1){ ?>  checked="checked" <?php } ?>><label class="light" for="development"><?php echo $GLOBALS['language']['yes']; ?></label></td><td></td><td></td></tr><tr><td colspan="3" align="center">
         <button type="submit" name="settingsubmit" >Okey</button>
 		</td></tr>
 		</table>
@@ -1464,12 +1782,309 @@ foreach($meta_keys as $meta_key){
 <?php
 }
 function LMT_add(){ 
+  if ( isset($_POST['moviessubmit'] ) ) {
+
+	global $wpdb;
+	  	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
+			$ltm_options = $wpdb->prefix . 'ltm_options';
+	if(!empty($_POST['movie_add_list'])) {
+    foreach($_POST['movie_add_list'] as $addcheck) {
+	$user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
+	$movie_list_sql="SELECT * FROM ".$ltm_trailer." WHERE id =".$addcheck;
+$movie_list = $wpdb->get_results($movie_list_sql, ARRAY_A);
+
+
+$movie_content='<iframe src="//www.dailymotion.com/embed/video/{embed}" width="{width}" height="{height}" frameborder="0" allowfullscreen="allowfullscreen"></iframe>';
+
+$movie_content=str_replace("{embed}",$movie_list[0]['movie_id'],$movie_content);
+
+$movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
+
+$movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
+if(empty($user_options[0]['embed_taxonomy'])){
+$movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
+$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
+}else{
+$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
+}
+//$movie_content='[code language="html" ]'.$movie_content.'[/code]';
+
+$movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0]['title']);
+if(empty($user_options[0]['embed_taxonomy'])){
+	$post = array(
+     'post_author' => 1,
+     'post_content' =>$movie_content,
+     'post_status' => "future",
+     'post_title' => $movie_name,
+    // 'post_date'	=> date('Y-m-d H:i:s', strtotime(($time*45).' minutes +'.mt_rand(20, 200).' seconds')),
+     // 'post_parent' => '',
+     'post_type' => "post"
+     );
+}else{
+	$post = array(
+     'post_author' => 1,
+     'post_content' =>$movie_contents,
+     'post_status' => "future",
+     'post_title' => $movie_name,
+    // 'post_date'	=> date('Y-m-d H:i:s', strtotime(($time*45).' minutes +'.mt_rand(20, 200).' seconds')),
+     // 'post_parent' => '',
+     'post_type' => "post"
+     );
+}
+	      $post_id = wp_insert_post( $post);
+	if(!empty($user_options[0]['embed_taxonomy'])){
+	$embed_taxonomy=explode("|||||",$user_options[0]['embed_taxonomy']);
+if(taxonomy_exists($embed_taxonomy[0])){
+
+}else{
+add_post_meta( $post_id,$embed_taxonomy[0],$movie_content );
+}
+}else{
+
+}	 
+	if(!empty($user_options[0]['specific'])){
+	$embed_taxonomy=explode("|||||",$user_options[0]['specific']);
+	$movie_specific=str_replace(array("%%title%%","%%cast%%","%%year%%","%%producertitle%%","%%yeartitle%%","%%actortitle%%","%%gendetitle%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_year'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_genre']),$user_options[0]['specific_title']);
+if(taxonomy_exists($specific[0])){
+if($specific[0]=="category"){
+	if(is_category( $movie_specific)){
+		$movie_specific_cat_id[]=get_cat_ID($movie_specific);
+		wp_set_post_categories( $post_id,$movie_specific_cat_id) ;
+	}else{
+	
+		$movie_specific_cat_id[]=  wp_create_category($movie_specific);
+		wp_set_post_categories( $post_id,$movie_specific_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$movie_specific,$specific[0]);
+ }
+}else{
+add_post_meta( $post_id,$specific[0],$movie_specific );
+}
+}else{
+
+}
+$image_ext=substr( str_replace("-xlarge","",$movie_list[0]['movie_poster']), -4);
+$image_ext=str_replace(".","",$image_ext);
+$image_save_name=$movie_list[0]['movie_id'].".".$image_ext;
+$file=image_save(str_replace("-xlarge","",$movie_list[0]['movie_poster']),$image_save_name);
+$wp_filetype = wp_check_filetype( $file, null );
+	$attachment = array(
+    'post_mime_type' => $wp_filetype['type'],
+    'post_title' => preg_replace('/.[^.]+$/', '', basename( $file) ),
+    //'post_content' => '',
+    //'post_author' => 1,
+    //'post_status' => 'inherit',
+    'post_type' => 'attachment',
+    'post_parent' =>  $post_id,
+    'guid' => $wp_upload_dir['url'] . '/' . basename( $file)
+	);
+require_once( ABSPATH . 'wp-admin/includes/image.php' );
+	$attach_id = wp_insert_attachment( $attachment, $file);
+	$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+wp_update_attachment_metadata( $attach_id, $attach_data );
+$movie_tag=str_replace('%%tagtitle%%',$movie_list[0]['movie_name'],$user_options[0]['category_title']);
+wp_set_post_tags($post_id,$movie_tag);
+
+if(!empty($user_options[0]['gender'])){
+	if(!empty($movie_list[0]['movie_genre']) AND stristr($movie_list[0]['movie_genre'],'n/a')=== false){
+$gender=explode("|||||",$user_options[0]['gender']);
+if(taxonomy_exists($gender[0])){
+if($user_options[0]['gendeauto']==1){
+$movie_genre_array=explode(",",$movie_list[0]['movie_genre']);
+for($g=0;$g<count($movie_genre_array);$g++){
+
+if($gender[0]=="category"){
+$movie_genre=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
+	if(is_category( $movie_genre)){
+		$movie_genre_cat_id[]=get_cat_ID($movie_genre);
+		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
+	}else{
+	
+		$movie_genre_cat_id[]=  wp_create_category($movie_genre);
+		wp_set_post_categories( $post_id,$movie_genre_cat_id) ;
+	}
+	}else{
+	$movie_genre[]=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
+ wp_set_post_terms( $post_id,$movie_genre , $gender[0] );
+ }
+}
+}else{
+
+}
+unset($movie_genre);
+}else{
+if($user_options[0]['gendeauto']==1){
+$movie_genre_array=explode(",",$movie_list[0]['movie_genre']);
+for($g=0;$g<count($movie_genre_array);$g++){
+$movie_genre[]=str_replace("%%gendetitle%%",$movie_genre_array[$g],$user_options[0]['gende_title']);
+add_post_meta( $post_id,$gender[0],$movie_genre );
+}
+}else{
+
+}
+
+}
+}
+}else{
+
+}
+if(!empty($user_options[0]['year'])){
+		if(!empty($movie_list[0]['movie_year']) AND stristr($movie_list[0]['movie_year'],'n/a')=== false){
+$movie_year=str_replace("%%yeartitle%%",$movie_list[0]['movie_year'],$user_options[0]['year_title']);
+$year=explode("|||||",$user_options[0]['year']);
+if(taxonomy_exists($year[0])){
+if($year[0]=="category"){
+	if(is_category( $movie_year)){
+		$movie_year_cat_id[]=get_cat_ID($movie_year);
+		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
+	}else{
+	
+		$movie_year_cat_id[]=  wp_create_category($movie_year);
+		wp_set_post_categories( $post_id,$movie_year_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$movie_year ,$year[0] );
+ }
+}else{
+add_post_meta( $post_id,$year[0],$movie_list[0]['movie_year'] );
+}
+}
+}else{
+
+}
+
+
+if(!empty($user_options[0]['imdb'])){
+		if(!empty($movie_list[0]['movie_imdb']) AND stristr($movie_list[0]['movie_imdb'],'n/a')=== false){
+$imdb_point=str_replace("%%imdbpoint%%",$movie_list[0]['movie_imdb'],$user_options[0]['imdb_title']);
+$imdb=explode("|||||",$user_options[0]['imdb']);
+if(taxonomy_exists($imdb[0])){
+if($imdb[0]=="category"){
+	if(is_category( $imdb_point)){
+		$imdb_point_cat_id[]=get_cat_ID($imdb_point);
+		wp_set_post_categories( $post_id,$imdb_point_cat_id) ;
+	}else{
+	
+		$imdb_point_cat_id[]=  wp_create_category($imdb_point);
+		wp_set_post_categories( $post_id,$imdb_point_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$imdb_point ,$imdb[0] );
+ }
+}else{
+add_post_meta( $post_id,$imdb[0],$movie_list[0]['movie_imdb'] );
+}
+}
+}else{
+
+}
+
+
+if(!empty($user_options[0]['producer'])){
+		if(!empty($movie_list[0]['movie_producer']) AND stristr($movie_list[0]['movie_producer'],'n/a')=== false){
+$movie_producer=str_replace("%%producertitle%%",$movie_list[0]['movie_producer'],$user_options[0]['producer_title']);
+$producer=explode("|||||",$user_options[0]['producer']);
+if(taxonomy_exists($producer[0])){
+if($producer[0]=="category"){
+	if(is_category( $movie_producer)){
+		$movie_producer_cat_id[]=get_cat_ID($movie_producer);
+		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
+	}else{
+	
+		$movie_producer_cat_id[]=  wp_create_category($movie_producer);
+		wp_set_post_categories( $post_id,$movie_producer_cat_id) ;
+	}
+	}else{
+ wp_set_post_terms( $post_id,$movie_producer , $producer[0] );
+ }
+}else{
+add_post_meta( $post_id, $producer[0],$movie_list[0]['movie_producer'] );
+}
+}
+}else{
+
+}
+if(!empty($user_options[0]['actor'])){
+if(!empty($movie_list[0]['movie_cast']) AND stristr($movie_list[0]['movie_cast'],'n/a')=== false){
+	$actor=explode("|||||",$user_options[0]['actor']);
+if(taxonomy_exists($actor[0])){
+if($user_options[0]['actorauto']==1){
+$movie_cast_array=explode(",",$movie_list[0]['movie_cast']);
+for($g=0;$g<count($movie_cast_array);$g++){
+if($actor[0]=="category"){
+$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
+	if(is_category( $movie_cast)){
+		$movie_cast_cat_id[]=get_cat_ID($movie_cast);
+		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
+	}else{
+	
+		$movie_cast_cat_id[]=  wp_create_category($movie_cast);
+		wp_set_post_categories( $post_id,$movie_cast_cat_id) ;
+	}
+	}else{
+	$movie_cast[]=str_replace("%%actortitle%%",$movie_cast_array[$g],$user_options[0]['actor_title']);
+ wp_set_post_terms( $post_id,$movie_cast,$actor[0]);
+ }
+}
+}else{
+ //$movie_cast=str_replace("%%actortitle%%",$movie_list[0]['movie_cast'],$user_options[0]['actor_title']);
+ //wp_set_post_terms( $post_id,$movie_cast, $actor[0] );
+}
+unset($movie_cast);
+}else{
+if($user_options[0]['actorauto']==1){
+$movie_cast_array=explode(",",$movie_list[0]['movie_cast']);
+for($g=0;$g<count($movie_cast_array);$g++){
+$movie_cast=str_replace("%%actortitle%%",$movie_cast_array[$g],$actor[0]);
+add_post_meta( $post_id, $actor[0],$movie_cast );
+}
+}else{
+//add_post_meta( $post_id, $actor[0],$movie_list[0]['movie_cast'] );
+}
+
+}
+}
+}else{
+
+}
+set_post_thumbnail( $post_id, $attach_id );
+		$wpdb->update( 
+	$ltm_trailer, 
+	array( 
+		'movie_status' => 1
+	), 
+	array( 'id' => $addcheck ), 
+	array( 
+		'%d'
+	), 
+	array( '%d' ) 
+);
+unset($movie_list);
+    }
+}
+	if(!empty($_POST['movie_not_add_list'])) {
+    foreach($_POST['movie_not_add_list'] as $notaddcheck) {
+      $wpdb->update( 
+	$ltm_trailer, 
+	array( 
+		'movie_status' => 2
+	), 
+	array( 'id' => $notaddcheck ), 
+	array( 
+		'%d'
+	), 
+	array( '%d' ) 
+);
+    }
+}
+ }
   	global $wpdb;
 $ltm_options = $wpdb->prefix . 'ltm_options';
 $user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
 $language_req='language_'.$user_options[0]['language'].'.php';
 require_once($language_req);
-$api_url='http://trailerapi.com/api/api.php?user_trailer_limit='.$user_options[0]['trailer']."&language=".$user_options[0]['language'];
+$api_url='http://trailerapi.com/api/api.php?user_trailer_limit='.$user_options[0]['trailer']."&language=".$user_options[0]['language']."&year_option=".$user_options[0]['current_year'];
 $wp_version=get_bloginfo('version');
 $api_args = array(
     'timeout'     => 5,
@@ -1487,10 +2102,13 @@ $api_args = array(
     'filename'    => null
 ); 
 $api_url_content_array=wp_remote_get( $api_url,$api_args);
+
 $api_url_content=$api_url_content_array['body'];
+
 $user_trailer_last_id=$user_options[0]['trailer']+10;
 if(!$xml = simplexml_load_string($api_url_content))
 {
+
 		$wpdb->update( 
 	$ltm_options, 
 	array( 
@@ -1506,20 +2124,16 @@ if(!$xml = simplexml_load_string($api_url_content))
 	{
 
 ?>
+
 <div class="listtitle"><?php echo $GLOBALS['language']['lastmovietrailerlist']; ?></div>
 <?php
 if(empty($xml->error_status)){
 	foreach( $xml as $film ) {
-
-
 	$ltm_post=$wpdb->prefix.'posts';
-	$ltm_post_sql= "SELECT * FROM ".$ltm_post." WHERE post_title LIKE '%".addslashes($film->name)."%'";
-	$wpdb->get_results($ltm_post_sql);
-	$postCount = $wpdb->num_rows;
+	$postCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(ID) FROM $ltm_post WHERE  post_title LIKE %s ", '%'.addslashes((string) $film->name).'%'));
 	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
-$ltm_trailer_sql= "SELECT movie_id FROM ".$ltm_trailer." WHERE movie_id='".$film->did."'";
-	$wpdb->get_results($ltm_trailer_sql);
-	$trailertCount = $wpdb->num_rows;
+	$trailertCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $ltm_trailer WHERE movie_id = %s", (string) $film->did));
+	
 if($postCount>0){
 $movie_status=4;
 }else{
@@ -1529,15 +2143,15 @@ $movie_status=0;
 $wpdb->insert( 
 	$ltm_trailer, 
 	array( 
-		'movie_name' => $film->name,
-		'movie_poster' => $film->poster,
-		'movie_id' => $film->did,
-		'movie_description' =>$film->description,
-		'movie_year' =>$film->year,
-		'movie_producer' =>$film->producer,
-		'movie_imdb' =>$film->imdb,
-		'movie_cast' =>$film->cast,
-		'movie_genre' =>$film->genre,
+		'movie_name' => (string) $film->name,
+		'movie_poster' => (string) $film->poster,
+		'movie_id' => (string) $film->did,
+		'movie_description' =>(string) $film->description,
+		'movie_year' =>(string) $film->year,
+		'movie_producer' =>(string) $film->producer,
+		'movie_imdb' =>(string) $film->imdb,
+		'movie_cast' =>(string) $film->cast,
+		'movie_genre' =>(string) $film->genre,
 		'movie_status' => $movie_status
 	), 
 	array( 
@@ -1585,7 +2199,9 @@ $ltm_trailer = $wpdb->prefix . 'ltm_trailer';
 $query = $wpdb->get_results("SELECT * FROM $ltm_trailer WHERE movie_status='0' or  movie_status='4' Limit 10", ARRAY_A);
 	$movie_list_id=1;
 	?>
-	<?php if($xml->error_status=="refresh"){ }else{ echo $xml->error_status; } ?>
+	<?php 
+	
+	if($xml->error_status=="refresh"){ }else{ echo $xml->error_status; } ?>
 	<form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" id="add_form">
 	<input type="submit"  name="moviessubmit" value="<?php echo $GLOBALS['language']['selectsadd']; ?>" class="alladd">
 <br/><input id="alladd_checked" name="alladd_checked" type="checkbox" onclick="add_checked()" /> <?php echo $GLOBALS['language']['checkalladd']; ?>
@@ -1594,8 +2210,12 @@ $query = $wpdb->get_results("SELECT * FROM $ltm_trailer WHERE movie_status='0' o
 	<?php
 foreach($query as $row)
 {
-?>
 
+if(empty($row['movie_name'])){ ?>
+	<div style="color:#FF0000">No new trailer</div>
+	<?php
+	}
+	?>
 <div class="trailer normal caption"><div class="poster"><img src="<?php echo str_replace("-xlarge","",$row['movie_poster']); ?>" alt="<?php echo $row['movie_name'];?>" border="0"></div>
 <div class="description"><legend><span class="number"><?php echo $movie_list_id; ?></span><?php echo $row['movie_name'];?></legend><p><?php echo $row['movie_description'];?><br/>İmdb:<?php echo $row['movie_imdb'];?><br/><?php echo $GLOBALS['language']['producer'];?>:<?php echo $row['movie_producer'];?><br/><?php echo $GLOBALS['language']['cast']; ?>:<?php echo $row['movie_cast'];?></p><h3><input type="checkbox" id="addcheckbox" name="movie_add_list[]" value="<?php echo $row['id'];?>"><?php echo $GLOBALS['language']['addmovietrailer']; ?>&nbsp;<input type="checkbox" id="notaddcheckbox" name="movie_not_add_list[]" value="<?php echo $row['id'];?>"> <?php echo $GLOBALS['language']['notaddmovietrailer']; ?></p><p><?php if($row['movie_status']==4){?> <?php echo $GLOBALS['language']['problem']; ?><?php } ?>&nbsp;</h3></div></div>
 
@@ -1610,8 +2230,10 @@ $movie_list_id++;
 <?php
 die();
 return true;
+
 }
 function LMT_added(){ 
+
   	global $wpdb;
 $ltm_options = $wpdb->prefix . 'ltm_options';
 $user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
