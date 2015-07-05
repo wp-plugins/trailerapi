@@ -603,7 +603,7 @@ $GLOBALS['searchinfo']=$add_number." Movie Trailer added And ".$notadd_number." 
  if ( isset($_POST['searchsubmit'] ) ) {
  $language_req='language_'.$user_options[0]['language'].'.php';
 require_once($language_req);
-$api_url='http://trailerapi.com/api/api.php?user_trailer_limit=1&language='.$user_options[0]['language'];
+$api_url='http://trailerapi.com/api/api.php?user_trailer_limit=1&language='.$user_options[0]['language']."&year_option=".$user_options[0]['current_year'];
 if(!empty($_POST['genresearch'])){
 $api_url.='&genre='.$_POST['genresearch'];
 
@@ -650,6 +650,7 @@ $api_url_content=$api_url_content_array['body'];
 if(!$xml = simplexml_load_string($api_url_content))
 { 
 }else{
+
 ?>
 
 <form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" id="add_form">
@@ -659,6 +660,7 @@ if(!$xml = simplexml_load_string($api_url_content))
 <input id="allnotadd_checked" name="allnotadd_checked" type="checkbox" onclick="notadd_checked()" /> <?php echo $GLOBALS['language']['checknotalladd']; ?>
 <input id="api_url" name="api_url" type="hidden" value="<?php echo $api_url;?>" >
 <?php
+
 if(empty($xml->error_status)){
 	$movie_list_id=1;
 	foreach( $xml as $film ) {
@@ -1496,7 +1498,7 @@ $ltm_options = $wpdb->prefix . 'ltm_options';
 $user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
 $language_req='language_'.$user_options[0]['language'].'.php';
 require_once($language_req);
-$api_url='http://trailerapi.com/api/api.php?user_trailer_limit='.$user_options[0]['trailer']."&language=".$user_options[0]['language'];
+$api_url='http://trailerapi.com/api/api.php?user_trailer_limit='.$user_options[0]['trailer']."&language=".$user_options[0]['language']."&year_option=".$user_options[0]['current_year'];
 $wp_version=get_bloginfo('version');
 $api_args = array(
     'timeout'     => 5,
@@ -1604,7 +1606,7 @@ $wpdb->update(
 );
 }
 }
-?>
+ ?>
 <div class="listtitle"><?php echo $GLOBALS['language']['adminsettings']; ?></div>
 <?php if(!empty( $GLOBALS['posterror'])){ ?>
 <legend><?php echo  $GLOBALS['posterror']; unset( $GLOBALS['posterror']);  ?></legend>
@@ -2200,7 +2202,7 @@ $query = $wpdb->get_results("SELECT * FROM $ltm_trailer WHERE movie_status='0' o
 	$movie_list_id=1;
 	?>
 	<?php 
-	
+
 	if($xml->error_status=="refresh"){ }else{ echo $xml->error_status; } ?>
 	<form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" id="add_form">
 	<input type="submit"  name="moviessubmit" value="<?php echo $GLOBALS['language']['selectsadd']; ?>" class="alladd">
