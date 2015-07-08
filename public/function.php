@@ -1617,7 +1617,8 @@ $wpdb->update(
 <?php } ?>
 <table class="table"><tr>
 <form action="<?php echo  $_SERVER['REQUEST_URI'] ;?>" method="post" enctype="multipart/form-data" class="form">
-     <td>  <legend><span class="number">1</span><?php echo $GLOBALS['language']['language']; ?>:</legend>
+     <td> <div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['languagequest'];?></div><div class="clear"></div> <legend><span class="number">1</span><?php echo $GLOBALS['language']['language']; ?>:</legend>
        
         <select id="language" name="language">
             <option value="tr" <?php if($user_options[0]['language']=='tr'){ ?> selected="selected" <?php } ?>>Türkçe</option>
@@ -1626,10 +1627,12 @@ $wpdb->update(
             <option value="fr" <?php if($user_options[0]['language']=='fr'){ ?> selected="selected" <?php } ?>>Français</option>
             <option value="es" <?php if($user_options[0]['language']=='es'){ ?> selected="selected" <?php } ?>>Español</option>
         </select>
-        </td><td> <legend><span class="number">2</span><?php echo $GLOBALS['language']['automatic']; ?></legend>
+        </td><td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['autoquest'];?></div>  <legend><span class="number">2</span><?php echo $GLOBALS['language']['automatic']; ?></legend>
       
           <input type="checkbox" id="yes" value="1" name="yes" <?php if($user_options[0]['auto']==1){ ?>  checked="checked" <?php } ?>><label class="light" for="development"><?php echo $GLOBALS['language']['yes']; ?></label>
-		  </td><td>   <legend><span class="number">3</span><?php echo $GLOBALS['language']['tembedcode']; ?>:</legend>
+		  </td><td> <div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['embedquest'];?></div>  <legend><span class="number">3</span><?php echo $GLOBALS['language']['tembedcode']; ?>:</legend>
      <textarea name="embed" cols="50" rows="4" ><?php echo $user_options[0]['embed_code']; ?></textarea>
 	 <?php echo $GLOBALS['language']['embedis']; ?>
 	  <select id="embed_taxonomy" name="embed_taxonomy">
@@ -1644,19 +1647,24 @@ foreach($meta_keys as $meta_key){
 }
 ?>
 </select>
-	  </td></tr><tr><td>  <legend><span class="number">4</span><?php echo $GLOBALS['language']['posttitle']; ?>:</legend>
+	  </td></tr><tr><td>  <div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['postquest'];?></div>  <legend><span class="number">4</span><?php echo $GLOBALS['language']['posttitle']; ?>:</legend>
      <input name="title" type="text" value="<?php echo $user_options[0]['title']; ?>" />
-	 </td><td><legend><span class="number">5</span><?php echo $GLOBALS['language']['postdescription']; ?>:</legend>
+	 </td><td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['descriptionquest'];?></div><legend><span class="number">5</span><?php echo $GLOBALS['language']['postdescription']; ?>:</legend>
      <textarea name="post_description" cols="50" rows="4" ><?php echo $user_options[0]['post_description']; ?></textarea>
-	     </td><td> <legend><span class="number">6</span><?php echo $GLOBALS['language']['tembedcodewh']; ?>:</legend>
+	     </td><td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['embedpixelquest'];?></div> <legend><span class="number">6</span><?php echo $GLOBALS['language']['tembedcodewh']; ?>:</legend>
 		  <?php echo $GLOBALS['language']['width']; ?>:
 		  <input name="width" type="text" value="<?php echo $user_options[0]['width']; ?>" />
 		  <?php echo $GLOBALS['language']['height']; ?>:
 		  <input name="height" type="text"  value="<?php echo $user_options[0]['height']; ?>"/>
 		  	 
-  </td></tr><tr><td>  <legend><span class="number">7</span><?php echo $GLOBALS['language']['tagtitle']; ?>:</legend>
+  </td></tr><tr><td> <div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['tagquest'];?></div> <legend><span class="number">7</span><?php echo $GLOBALS['language']['tagtitle']; ?>:</legend>
     <textarea name="category_title"  cols="50" rows="4"><?php echo $user_options[0]['category_title']; ?></textarea>
-  </td><td>  <legend><span class="number">8</span><?php echo $GLOBALS['language']['selectactortax']; ?> :</legend>
+  </td><td> <div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['selectactorquest'];?></div> <legend><span class="number">8</span><?php echo $GLOBALS['language']['selectactortax']; ?> :</legend>
     <select id="actor" name="actor">
 	    <option value="" > <?php echo $GLOBALS['language']['selectactortax']; ?></option>
 <?php
@@ -1674,9 +1682,11 @@ foreach($meta_keys as $meta_key){
 }
 ?>
 </select>
-  </td><td> <legend><span class="number">9</span><?php echo $GLOBALS['language']['actortitle']; ?>:</legend>
+  </td><td> <div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['actorquest'];?></div><legend><span class="number">9</span><?php echo $GLOBALS['language']['actortitle']; ?>:</legend>
      <input name="actor_title" type="text" value="<?php echo $user_options[0]['actor_title']; ?>" />
-  </td></tr><tr><td> <legend><span class="number">10</span><?php echo $GLOBALS['language']['selectyeartax']; ?> :</legend>
+  </td></tr><tr><td> <div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['selectyearquest'];?></div> <legend><span class="number">10</span><?php echo $GLOBALS['language']['selectyeartax']; ?> :</legend>
     <select id="year" name="year">
 	    <option value="" > <?php echo $GLOBALS['language']['selectyeartax']; ?></option>
 <?php
@@ -1695,9 +1705,11 @@ foreach($meta_keys as $meta_key){
 ?>
 </select>
 
-   </td><td> <legend><span class="number">11</span><?php echo $GLOBALS['language']['yeartitle']; ?>:</legend>
+   </td><td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['yearquest'];?></div> <legend><span class="number">11</span><?php echo $GLOBALS['language']['yeartitle']; ?>:</legend>
      <input name="year_title" type="text" value="<?php echo $user_options[0]['year_title']; ?>" />
-  </td><td> <legend><span class="number">12</span><?php echo $GLOBALS['language']['selectgendetax']; ?> :</legend>
+  </td><td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['selectgendequest'];?></div> <legend><span class="number">12</span><?php echo $GLOBALS['language']['selectgendetax']; ?> :</legend>
     <select id="gender" name="gender">
 	 <option value="" > <?php echo $GLOBALS['language']['selectgendetax']; ?></option>
 <?php
@@ -1716,11 +1728,11 @@ foreach($meta_keys as $meta_key){
 ?>
 </select>
 
-   </td></tr><tr><td><legend><span class="number">13</span><?php echo $GLOBALS['language']['gendetitle']; ?>:</legend>
+   </td></tr><tr><td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['gendequest'];?></div><legend><span class="number">13</span><?php echo $GLOBALS['language']['gendetitle']; ?>:</legend>
      <input name="gende_title" type="text" value="<?php echo $user_options[0]['gende_title']; ?>" /></td>
-	<td> <legend><span class="number">14</span><?php echo $GLOBALS['language']['producertitle']; ?>:</legend>
-     <input name="producer_title" type="text" value="<?php echo $user_options[0]['producer_title']; ?>" />
-  </td><td><legend><span class="number">15</span><?php echo $GLOBALS['language']['selectproducertax']; ?> :</legend>
+	<td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['selectproducerquest'];?></div><legend><span class="number">14</span><?php echo $GLOBALS['language']['selectproducertax']; ?> :</legend>
     <select id="producer" name="producer">
 	    <option value="" > <?php echo $GLOBALS['language']['selectproducertax']; ?></option>
 <?php
@@ -1738,9 +1750,14 @@ foreach($meta_keys as $meta_key){
 <?php 
 }
 ?>
-</select></td></tr><tr><td><legend><span class="number">16</span><?php echo $GLOBALS['language']['imdbtitle']; ?>:</legend>
-     <input name="imdbtitle" type="text" value="<?php echo $user_options[0]['imdb_title']; ?>" /></td>
-	<td> <legend><span class="number">17</span><?php echo $GLOBALS['language']['imdbpointtax']; ?> :</legend>
+</select></td>
+<td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['producerquest'];?></div> <legend><span class="number">15</span><?php echo $GLOBALS['language']['producertitle']; ?>:</legend>
+     <input name="producer_title" type="text" value="<?php echo $user_options[0]['producer_title']; ?>" />
+  </td>
+</tr><tr>
+	<td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['imdbpointtaxquest'];?></div>  <legend><span class="number">16</span><?php echo $GLOBALS['language']['imdbpointtax']; ?> :</legend>
     <select id="imdb" name="imdb">
 	    <option value="" > <?php echo $GLOBALS['language']['imdbpointtax']; ?></option>
 <?php
@@ -1758,7 +1775,12 @@ foreach($meta_keys as $meta_key){
 }
 ?>
 </select>
-  </td><td><legend><span class="number">18</span><?php echo $GLOBALS['language']['specifictitle']; ?>:</legend>
+  </td>
+  <td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['imdbpointquest'];?></div> <legend><span class="number">17</span><?php echo $GLOBALS['language']['imdbtitle']; ?>:</legend>
+     <input name="imdbtitle" type="text" value="<?php echo $user_options[0]['imdb_title']; ?>" /></td>
+  <td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['specificquest'];?></div> <legend><span class="number">18</span><?php echo $GLOBALS['language']['specifictitle']; ?>:</legend>
      <input name="specific_title" type="text" value="<?php echo $user_options[0]['specific_title']; ?>" /><legend><?php echo $GLOBALS['language']['specifictaxonomy']; ?> :</legend>
     <select id="specific" name="specific">
 	    <option value="" > <?php echo $GLOBALS['language']['specifictaxonomy']; ?></option>
@@ -1776,7 +1798,8 @@ foreach($meta_keys as $meta_key){
 <?php 
 }
 ?>
-</select></td></tr><tr><td><legend><span class="number">19</span><?php echo $GLOBALS['language']['currentyear']; ?>:</legend><br/> <input type="checkbox" id="current_year" value="1"  name="current_year" <?php if($user_options[0]['current_year']==1){ ?>  checked="checked" <?php } ?>><label class="light" for="development"><?php echo $GLOBALS['language']['yes']; ?></label></td><td></td><td></td></tr><tr><td colspan="3" align="center">
+</select></td></tr><tr><td><div ><a id="question" href="#"><img width="32" height="37" src=" <?php echo plugin_dir_url( __FILE__ ).'question-mark.png' ?>"></a>
+<div id="questiontitle"><?php echo $GLOBALS['language']['currentquest'];?></div><legend><span class="number">19</span><?php echo $GLOBALS['language']['currentyear']; ?>:</legend><br/> <input type="checkbox" id="current_year" value="1"  name="current_year" <?php if($user_options[0]['current_year']==1){ ?>  checked="checked" <?php } ?>><label class="light" for="development"><?php echo $GLOBALS['language']['yes']; ?></label></td><td></td><td></td></tr><tr><td colspan="3" align="center">
         <button type="submit" name="settingsubmit" >Okey</button>
 		</td></tr>
 		</table>

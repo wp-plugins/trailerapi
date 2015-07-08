@@ -247,5 +247,61 @@ text-align:center;
 	background: -moz-linear-gradient(top,  #f8f8f8,  #f6f6f6);
 }
 
+#question {
+	display: block;
 
+	width: 32px;
+	height: 32px;
+	padding-bottom:20px;
+}
+
+#question:hover + #questiontitle {
+	display: block;
+}
+
+
+
+#questiontitle 
+{
+position: absolute;
+width: 250px;
+display: none;
+padding: 5px;
+background: #f7f7f7;
+-webkit-border-radius: 13px;
+-moz-border-radius: 13px;
+border-radius: 13px;
+border: #5fcf80 solid 2px;
+}
+
+#questiontitle:after 
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 0 15px 15px;
+border-color: #f7f7f7 transparent;
+display: block;
+width: 0;
+z-index: 1;
+top: -15px;
+left: 15px;
+}
+
+#questiontitle:before 
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 0 16px 16px;
+border-color: #5fcf80 transparent;
+display: block;
+width: 0;
+z-index: 0;
+top: -18px;
+left: 14px;
+}
+div.clear {
+    clear: both;
+}
 </style>

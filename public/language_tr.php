@@ -1,5 +1,7 @@
 <?php
+$current_years='Eğer Seçim Yaparsanız; Fragman Ekleme Bölümünde '.date('Y').' Yılına Ait Fragmanlar Listelenecektir. Seçim Yapmazsanız Tüm Zamanlardaki Fragmanlar Listelenecektir.';
 unset($GLOBALS['language']);
+
 $GLOBALS['language']=array(
 'adminsettings'=>'Admin Paneli',
 'addmovie'=>'Fragman Ekle',
@@ -82,6 +84,25 @@ $GLOBALS['language']=array(
 'errorimdbtitle'=>'İMDB Title %%imdbpoint%% geçmeli<br>',
 'specifictitle'=>'Specific Taxonomy Başlığı',
 'specifictaxonomy'=>'Specific Taxonomy Seçiniz',
-'currentyear'=>'Sadece Bu Yılı Liste',
+'currentyear'=>'Trailer List Of Current Year',
+'languagequest'=>'Plugin Dilini ve Yayın Yapacağınız Dilin Seçimini Yapıbilirsiniz. Yaptığınız Seçime Göre Film İsimleri Gelecektir.',
+'autoquest'=>'Sitenize Otomatik Fragman Eklenmesini istiyorsanız Buradaki Bölümü Seçebilirsiniz. Seçtiğinizde Sitenizde Hiç Olmayan Fragmanlar Eklenecektir. Not:Bu Özellik Wordpress Yapısından Dolayı Ziyaretçi Alınması ile Çalışan Bir Yapıya Sahiptir. Zamanlanmış Görevin Zamanı Geçme İhtimali vardır.',
+'embedquest'=>'Sitenize Sabit bir Embed Kodu ile Çalışıyorsa Kodu Aşağıdaki Kutuya Yazınız. Eğer Siteniz Embed Yayınını Taxonomy Üzerinden Yapıyorsa Aşağıdan Uygun Taxonomyi Seçiniz.',
+'postquest'=>'Sitenize Gönderilecek Postların Başlığın Nasıl Gönderileceğini Burada Belirtiniz. %%posttitle%% Değişkeni yerine Filmin İsmi Yazılacaktır. Örneğin : "%%posttitle%% Fragmanı" Yazarsanız Postlar : Hızlı ve Öfkeli 7 Fragmanı Şeklinde Girecektir.',
+'descriptionquest'=>'Sitenize Gönderilecek Postların Özgünleştirmenizi Sağlayacaktır. %%title%% ,%%cast%%, %%year%% Değişkenlerini Kullanarak Sitenize Özgün Bir Yapı Kazandırabilirsiniz.',
+'embedpixelquest'=>'Sitenizede Oynatılacak Player Uzunluğu ve Genişliğini Burada Belirtebilirsiniz. %100 Yazarsanız Responsive Player Elde Edebilirsiniz.',
+'tagquest'=>'%%tagtitle%% Değikeni Kullanarak İstediğiniz Taglamayı yapabilirsiniz. Taglar Arasında , Olmasına Dikkat Ediniz.',
+'selectactorquest'=>'Temanızda Aktörlere Ait Bir Taxonomy veya Post meta var ise Buradan Seçiniz. Eğer Yoksa Boş Bırakınız.(Kategoriniz Film Aktörleri ise Category Seçeneğini Seçiniz)',
+'actorquest'=>'Temanızda Aktörlere Ait Taxonomy veya Post meta Başlığını Belirtiniz. Belirtiğiniz Başlık Temanıza Uygun Şekilde Adapte Edilecektir.',
+'selectyearquest'=>'Temanızda Yıla Ait Bir Taxonomy veya Post meta var ise Buradan Seçiniz. Eğer Yoksa Boş Bırakınız.(Kategoriniz Film Yılı ise Category Seçeneğini Seçiniz)',
+'yearquest'=>'Temanızda Yıla Ait Taxonomy veya Post meta Başlığını Belirtiniz. Belirtiğiniz Başlık Temanıza Uygun Şekilde Adapte Edilecektir.',
+'selectgendequest'=>'Temanızda Film Türüne Ait Bir Taxonomy veya Post meta var ise Buradan Seçiniz. Eğer Yoksa Boş Bırakınız. (Kategoriniz Film Türüne Göre ise Category Seçeneğini Seçiniz)',
+'gendequest'=>'Temanızda Film Türüne Ait Taxonomy veya Post meta Başlığını Belirtiniz. Belirtiğiniz Başlık Temanıza Uygun Şekilde Adapte Edilecektir.',
+'selectproducerquest'=>'Temanızda Prodeksiyona Ait Bir Taxonomy veya Post meta var ise Buradan Seçiniz. Eğer Yoksa Boş Bırakınız. (Kategoriniz Film Prodiksiyonu ise Category Seçeneğini Seçiniz)',
+'producerquest'=>'Temanızda Prodeksiyona Ait Taxonomy veya Post meta Başlığını Belirtiniz. Belirtiğiniz Başlık Temanıza Uygun Şekilde Adapte Edilecektir.',
+'imdbpointtaxquest'=>'Temanızda İmdb Puanına Ait Bir Taxonomy veya Post meta var ise Buradan Seçiniz. Eğer Yoksa Boş Bırakınız. (Kategoriniz Film Prodiksiyonu ise Category Seçeneğini Seçiniz)',
+'imdbpointquest'=>'Temanızda İmdb Puanına Ait Taxonomy veya Post meta Başlığını Belirtiniz. Belirtiğiniz Başlık Temanıza Uygun Şekilde Adapte Edilecektir.',
+'specificquest'=>'Temanızda Spesifik Bir Taxonomy veya Post meta var ise Buradan Seçiniz. Eğer Yoksa Boş Bırakınız. Bir Taxonomy Seçtiyseniz ; O Taxonomy Başlığını Belirtiniz. Belirtiğiniz Başlık Temanıza Uygun Şekilde Adapte Edilecektir.',
+'currentquest'=>$current_years,
 )
 ?>
