@@ -824,6 +824,115 @@ wp_schedule_event( time(),'hourly', 'ltm_movie_save' );
 }
 			
 	$user_options = $wpdb->get_results("SELECT * FROM {$ltm_options} WHERE id = 1", ARRAY_A);
+	$api_url='http://trailerapi.com/api/api.php?user_trailer_limit='.$user_options[0]['trailer']."&language=".$user_options[0]['language']."&year_option=".$user_options[0]['current_year'];
+$wp_version=get_bloginfo('version');
+$api_args = array(
+    'timeout'     => 5,
+    'redirection' => 5,
+    'httpversion' => '1.0',
+    'user-agent'  => 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ),
+    'blocking'    => true,
+    'headers'     => array(),
+    'cookies'     => array(),
+    'body'        => null,
+    'compress'    => false,
+    'decompress'  => true,
+    'sslverify'   => true,
+    'stream'      => false,
+    'filename'    => null
+); 
+$api_url_content_array=wp_remote_get( $api_url,$api_args);
+$api_url_content=$api_url_content_array['body'];
+$user_trailer_last_id=$user_options[0]['trailer']+50;
+if(!$xml = simplexml_load_string($api_url_content))
+{
+		$wpdb->update( 
+	$ltm_options, 
+	array( 
+		'trailer' => 1
+	), 
+	array( 'id' => 1 ), 
+	array( 
+		'%d'
+	), 
+	array( '%d' ) 
+);
+	}else
+	{
+
+
+if(empty($xml->error_status)){
+	foreach( $xml as $film ) {
+
+
+	$ltm_post=$wpdb->prefix.'posts';
+	$postCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(ID) FROM $ltm_post WHERE  post_title LIKE %s ", '%'.addslashes((string) $film->name).'%'));
+	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
+
+	$trailertCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $ltm_trailer WHERE movie_id = %s", $film->did));
+
+if($postCount>0){
+$movie_status=4;
+}else{
+$movie_status=0;
+}
+	if($trailertCount==0){
+$wpdb->insert( 
+	$ltm_trailer, 
+	array( 
+		'movie_name' => (string) $film->name,
+		'movie_poster' => (string) $film->poster,
+		'movie_id' => (string) $film->did,
+		'movie_description' =>(string) $film->description,
+		'movie_year' =>(string) $film->year,
+		'movie_producer' =>(string) $film->producer,
+		'movie_imdb' =>(string) $film->imdb,
+		'movie_cast' =>(string) $film->cast,
+		'movie_genre' =>(string) $film->genre,
+		'movie_status' => $movie_status
+	), 
+	array( 
+		'%s', //movie_name
+		'%s', //movie_poster
+		'%s', //movie_did
+		'%s', //movie_description
+		'%s', // movie_year
+		'%s',// movie_producer
+		'%s', //movie_imdb
+		'%s', //movie_cast
+		'%s', //movie_genre
+		'%d' //movie_status
+	) 
+);
+
+}
+}
+$wpdb->update( 
+	$ltm_options , 
+	array( 
+		'trailer' => $user_trailer_last_id,	// string
+	
+	), 
+	array( 'id' => 1 ), 
+	array( 
+		'%d'	// value2
+	), 
+	array( '%d' ) 
+);
+}else{
+		$wpdb->update( 
+	$ltm_options, 
+	array( 
+		'trailer' => 1
+	), 
+	array( 'id' => 1 ), 
+	array( 
+		'%d'
+	), 
+	array( '%d' ) 
+);
+}
+}
 	$movie_list_sql="SELECT * FROM ".$ltm_trailer." WHERE movie_status='0'";
 $movie_list = $wpdb->get_results($movie_list_sql, ARRAY_A);
 if(!empty($movie_list[0]['movie_name'])){
@@ -1543,7 +1652,8 @@ if(empty($xml->error_status)){
 	$postCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(ID) FROM $ltm_post WHERE  post_title LIKE %s ", '%'.addslashes((string) $film->name).'%'));
 	$ltm_trailer = $wpdb->prefix . 'ltm_trailer';
 
-	$trailertCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $ltm_trailer WHERE movie_id = %d", (string) $film->did));
+	$trailertCount = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $ltm_trailer WHERE movie_id = %s", $film->did));
+
 if($postCount>0){
 $movie_status=4;
 }else{
