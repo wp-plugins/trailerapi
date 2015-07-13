@@ -27,7 +27,7 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * You can categorize searching criterias as year, imdb points and casts
 * You can search year, imdb points and casts
 * You can add all search results
-
+* Fixed a bug when script can't get xml correctly
 (Türkçe)
 * En Son Fragmanlar
 * Kolay Kurulum
@@ -71,7 +71,8 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * You can categorize searching criterias as year, imdb points and casts
 * You can search year, imdb points and casts
 * You can add all search results
-
+* Cronjobs bugs have been fixedsearch by all year
+* Fixed a bug when script can't get xml correctly
 (Türkçe)
 * En Son Fragmanlar
 * Kolay Kurulum
@@ -109,4 +110,5 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * You can search year, imdb points and casts
 * You can add all search results
 = 1.2 =
-*Cronjobs bugs have been fixedsearch by all year
+* Cronjobs bugs have been fixedsearch by all year
+* Fixed a bug when script can't get xml correctly
