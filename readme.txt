@@ -1,6 +1,6 @@
 === Plugin Name ===
 Contributors: trailerapi
-Tags: movie, cinema, trailer, film, fragman, sinema
+Tags: movie, cinema, trailer, film, fragman, sinema,movie fragman,cinema fragman,movie trailer,cinema trailer,Last movie trailer,latest movie trailer
 Requires at least: 3.0.1
 Tested up to: 4.2
 Stable tag: 4.2
@@ -28,7 +28,7 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * You can search year, imdb points and casts
 * You can add all search results
 * Fixed a bug when script can't get xml correctly
-(Türkçe)
+
 * En Son Fragmanlar
 * Kolay Kurulum
 * Kullanıcılar için arayüz
@@ -44,10 +44,14 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * yıl imdb puan oyuncu tür  kriterlerine göre  kategorilendirme
 * Yıl,imdb id,imdb puan,oyuncu,tür kriterlerinde arama
 * Arama Sonucuna Göre toplu fragman ekleme
+* Beyaz Sayfa Hatası Giderildi
 
 == Installation ==
 1. Upload `trailerapi.zip` to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
+
+1. `/wp-content/plugins/` dosyası içine `trailerapi.zip` dosyasını unzip ediniz.
+2. Wordpress plugin Sayfasından Plugini Aktifleştiriniz.
 == Screenshots ==
 
 1. /assets/screenshot-1.jpg
@@ -73,7 +77,7 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * You can add all search results
 * Cronjobs bugs have been fixedsearch by all year
 * Fixed a bug when script can't get xml correctly
-(Türkçe)
+
 * En Son Fragmanlar
 * Kolay Kurulum
 * Kullanıcılar için arayüz
@@ -89,7 +93,7 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * yıl imdb puan oyuncu tür  kriterlerine göre  kategorilendirme
 * Yıl,imdb id,imdb puan,oyuncu,tür kriterlerinde arama
 * Arama Sonucuna Göre toplu fragman ekleme
-
+* Beyaz Sayfa Hatası Giderildi
 
 = 1.0 =
 * First version
