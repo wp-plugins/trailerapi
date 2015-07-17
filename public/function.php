@@ -1,6 +1,8 @@
 <?php
 ob_start();
 error_reporting(0);
+ini_set('max_execution_time', '0');
+ini_set('set_time_limit', '0');
 /*
 assert_options(ASSERT_ACTIVE, 1);
 assert_options(ASSERT_BAIL, 1);
