@@ -55,10 +55,12 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 == Screenshots ==
 
 1. /assets/screenshot-1.jpg
-1. /assets/screenshot-2.jpg
+2. /assets/screenshot-2.jpg
+
 == Changelog ==
 = 1.0 =
 * First version
+
 = 1.1 =
 * Last minute trailers
 * Easy installation
@@ -78,6 +80,7 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * Cronjobs bugs have been fixedsearch by all year
 * Fixed a bug when script can't get xml correctly
 
+----- Türkçe -----
 * En Son Fragmanlar
 * Kolay Kurulum
 * Kullanıcılar için arayüz
@@ -95,24 +98,7 @@ With this plugin you can add latest movie trailers to your wordpress site manual
 * Arama Sonucuna Göre toplu fragman ekleme
 * Beyaz Sayfa Hatası Giderildi
 
-= 1.0 =
-* First version
-= 1.1 =
-* Last minute trailers
-* Easy installation
-* Clean interface
-* Automatic trailer add
-* Cumulative trailer add
-* Free(as in beer) and limitless service
-* You can intergrate this plugin to every wordpress theme
-* Automatic tag system
-* Automatic movie poster
-* Automatic IMDB points
-* Automatic genre
-* Automatic casting
-* You can categorize searching criterias as year, imdb points and casts
-* You can search year, imdb points and casts
-* You can add all search results
 = 1.2 =
 * Cronjobs bugs have been fixedsearch by all year
 * Fixed a bug when script can't get xml correctly
+* Now you can add year data to title
