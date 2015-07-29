@@ -260,11 +260,11 @@ function LMT_search() {
 				$movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
 				if(empty($user_options[0]['embed_taxonomy'])) {
 					$movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
-					$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array((string) $film->name,(string) $film->cast,(string) $film->year),$user_options[0]['post_description']);
+					$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%"),array((string)$film->name,$film->cast,(string)$film->year,(string)$film->name,(string)$film->year,(string)$film->producer,(string)$film->imdb),$user_options[0]['post_description']);
 				} else {
-					$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%"),array((string) $film->name,(string) $film->cast,(string) $film->year),$user_options[0]['post_description']);
+					$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($film->name,$film->cast,$film->year,$film->name,$film->year,$film->producer,$film->imdb,"",""),$user_options[0]['post_description']);
 				}
-				$movie_name=str_replace("%%title%%",(string) $film->name,$user_options[0]['title']);
+				$movie_name=str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array((string)$film->name,"",(string)$film->year,(string)$film->name,(string)$film->year,(string)$film->producer,(string)$film->imdb,"",""),$user_options[0]['title']);
 				if(empty($user_options[0]['embed_taxonomy'])){
 					$post = array(
 				     'post_author' => 1,
@@ -925,13 +925,13 @@ $movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
 $movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
 if(empty($user_options[0]['embed_taxonomy'])){
 $movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
-$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
+$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($movie_list[0]['movie_name'],"",$movie_list[0]['movie_year'],$movie_list[0]['movie_name'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_imdb'],"",""),$user_options[0]['post_description']);
 }else{
-$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
+$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($movie_list[0]['movie_name'],"",$movie_list[0]['movie_year'],$movie_list[0]['movie_name'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_imdb'],"",""),$user_options[0]['post_description']);
 }
 //$movie_content='[code language="html" ]'.$movie_content.'[/code]';
 
-$movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0]['title']);
+$movie_name=str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($movie_list[0]['movie_name'],"",$movie_list[0]['movie_year'],$movie_list[0]['movie_name'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_imdb'],"",""),$user_options[0]['title']);
 if(empty($user_options[0]['embed_taxonomy'])){
 	$post = array(
      'post_author' => 1,
@@ -1918,13 +1918,13 @@ $movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
 $movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
 if(empty($user_options[0]['embed_taxonomy'])){
 $movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
-$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
+$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year'],$movie_list[0]['movie_name'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_imdb'],"",""),$user_options[0]['post_description']);
 }else{
-$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
+$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year'],$movie_list[0]['movie_name'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_imdb'],"",""),$user_options[0]['post_description']);
 }
 //$movie_content='[code language="html" ]'.$movie_content.'[/code]';
 
-$movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0]['title']);
+$movie_name=str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($movie_list[0]['movie_name'],"",$movie_list[0]['movie_year'],$movie_list[0]['movie_name'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_imdb'],"",""),$user_options[0]['title']);
 if(empty($user_options[0]['embed_taxonomy'])){
 	$post = array(
      'post_author' => 1,
@@ -2464,13 +2464,13 @@ $movie_content=str_replace("{width}",$user_options[0]['width'],$movie_content);
 $movie_content=str_replace("{height}",$user_options[0]['height'],$movie_content);
 if(empty($user_options[0]['embed_taxonomy'])){
 $movie_content=str_replace("%%embedcode%%",$movie_content,$user_options[0]['embed_code']);
-$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
+$movie_content=$movie_content."<br>".str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year'],$movie_list[0]['movie_name'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_imdb'],"",""),$user_options[0]['post_description']);
 }else{
-$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year']),$user_options[0]['post_description']);
+$movie_contents=str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($movie_list[0]['movie_name'],$movie_list[0]['movie_cast'],$movie_list[0]['movie_year'],$movie_list[0]['movie_name'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_imdb'],"",""),$user_options[0]['post_description']);
 }
 //$movie_content='[code language="html" ]'.$movie_content.'[/code]';
 
-$movie_name=str_replace("%%title%%",$movie_list[0]['movie_name'],$user_options[0]['title']);
+$movie_name=str_replace(array("%%title%%","%%cast%%","%%year%%","%%tagtitle%%","%%yeartitle%%","%%producertitle%%","%%imdbpoint%%","%%gendetitle%%","%%actortitle%%"),array($movie_list[0]['movie_name'],"",$movie_list[0]['movie_year'],$movie_list[0]['movie_name'],$movie_list[0]['movie_year'],$movie_list[0]['movie_producer'],$movie_list[0]['movie_imdb'],"",""),$user_options[0]['title']);
 if(empty($user_options[0]['embed_taxonomy'])){
 	$post = array(
      'post_author' => 1,
